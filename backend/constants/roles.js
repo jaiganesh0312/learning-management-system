@@ -1,0 +1,141 @@
+const PERMISSIONS = require('./permissions');
+
+/**
+ * Role definitions with their associated permissions
+ * Each role has a predefined set of permissions
+ */
+
+const ROLES = {
+  SUPER_ADMIN: {
+    name: 'super_admin',
+    displayName: 'Super Admin',
+    description: 'Full system access with user and system management capabilities',
+    permissions: [
+      // All permissions
+      PERMISSIONS.MANAGE_USERS,
+      PERMISSIONS.MANAGE_ROLES,
+      PERMISSIONS.MANAGE_SYSTEM_SETTINGS,
+      PERMISSIONS.IMPERSONATE_USER,
+      PERMISSIONS.CREATE_COURSE,
+      PERMISSIONS.EDIT_COURSE,
+      PERMISSIONS.DELETE_COURSE,
+      PERMISSIONS.PUBLISH_COURSE,
+      PERMISSIONS.UPLOAD_COURSE_MATERIAL,
+      PERMISSIONS.CREATE_LEARNING_PATH,
+      PERMISSIONS.EDIT_LEARNING_PATH,
+      PERMISSIONS.DELETE_LEARNING_PATH,
+      PERMISSIONS.CREATE_QUIZ,
+      PERMISSIONS.EDIT_QUIZ,
+      PERMISSIONS.DELETE_QUIZ,
+      PERMISSIONS.GRADE_QUIZ,
+      PERMISSIONS.CREATE_ASSIGNMENT,
+      PERMISSIONS.EDIT_ASSIGNMENT,
+      PERMISSIONS.GRADE_ASSIGNMENT,
+      PERMISSIONS.ENROLL_USER,
+      PERMISSIONS.ENROLL_TEAM,
+      PERMISSIONS.UNENROLL_USER,
+      PERMISSIONS.VIEW_ALL_PROGRESS,
+      PERMISSIONS.VIEW_ALL_REPORTS,
+      PERMISSIONS.EXPORT_REPORTS,
+      PERMISSIONS.MANAGE_COMPLIANCE,
+      PERMISSIONS.VIEW_COMPLIANCE_REPORTS,
+      PERMISSIONS.SEND_REMINDERS,
+      PERMISSIONS.SEND_BULK_REMINDERS,
+      PERMISSIONS.VIEW_AUDIT_LOGS,
+      PERMISSIONS.EXPORT_AUDIT_LOGS,
+      PERMISSIONS.VIEW_ALL_CERTIFICATES,
+      PERMISSIONS.ACCESS_ASSIGNED_COURSES,
+      PERMISSIONS.BROWSE_COURSES,
+    ],
+  },
+
+  CONTENT_CREATOR: {
+    name: 'content_creator',
+    displayName: 'Content Creator/Trainer',
+    description: 'Subject matter expert who creates and manages course content',
+    permissions: [
+      PERMISSIONS.CREATE_COURSE,
+      PERMISSIONS.EDIT_COURSE,
+      PERMISSIONS.DELETE_COURSE,
+      PERMISSIONS.PUBLISH_COURSE,
+      PERMISSIONS.UPLOAD_COURSE_MATERIAL,
+      PERMISSIONS.CREATE_LEARNING_PATH,
+      PERMISSIONS.EDIT_LEARNING_PATH,
+      PERMISSIONS.DELETE_LEARNING_PATH,
+      PERMISSIONS.CREATE_QUIZ,
+      PERMISSIONS.EDIT_QUIZ,
+      PERMISSIONS.DELETE_QUIZ,
+      PERMISSIONS.GRADE_QUIZ,
+      PERMISSIONS.CREATE_ASSIGNMENT,
+      PERMISSIONS.EDIT_ASSIGNMENT,
+      PERMISSIONS.DELETE_ASSIGNMENT,
+      PERMISSIONS.GRADE_ASSIGNMENT,
+      PERMISSIONS.FACILITATE_DISCUSSIONS,
+      PERMISSIONS.BROWSE_COURSES,
+    ],
+  },
+
+  DEPARTMENT_MANAGER: {
+    name: 'department_manager',
+    displayName: 'Department Manager',
+    description: 'Manages learning for their team members',
+    permissions: [
+      PERMISSIONS.CREATE_LEARNING_PATH, // For their team
+      PERMISSIONS.ENROLL_USER,
+      PERMISSIONS.ENROLL_TEAM,
+      PERMISSIONS.VIEW_TEAM_PROGRESS,
+      PERMISSIONS.VIEW_DEPARTMENT_REPORTS,
+      PERMISSIONS.SEND_REMINDERS,
+      PERMISSIONS.SEND_BULK_REMINDERS,
+      PERMISSIONS.BROWSE_COURSES,
+      PERMISSIONS.ACCESS_ASSIGNED_COURSES,
+    ],
+  },
+
+  COMPLIANCE_OFFICER: {
+    name: 'compliance_officer',
+    displayName: 'Compliance Officer',
+    description: 'Manages compliance training and tracks organization-wide compliance',
+    permissions: [
+      PERMISSIONS.CREATE_LEARNING_PATH, // Compliance-focused
+      PERMISSIONS.MANAGE_COMPLIANCE,
+      PERMISSIONS.VIEW_COMPLIANCE_REPORTS,
+      PERMISSIONS.VIEW_ALL_PROGRESS, // For compliance tracking
+      PERMISSIONS.SEND_REMINDERS,
+      PERMISSIONS.SEND_BULK_REMINDERS,
+      PERMISSIONS.VIEW_AUDIT_LOGS,
+      PERMISSIONS.EXPORT_AUDIT_LOGS,
+      PERMISSIONS.BROWSE_COURSES,
+      PERMISSIONS.MANAGE_USERS,
+    ],
+  },
+
+  LEARNER: {
+    name: 'learner',
+    displayName: 'Learner',
+    description: 'Default role for employees accessing assigned courses',
+    permissions: [
+      PERMISSIONS.ACCESS_ASSIGNED_COURSES,
+      PERMISSIONS.BROWSE_COURSES,
+      PERMISSIONS.VIEW_OWN_PROGRESS,
+      PERMISSIONS.VIEW_OWN_CERTIFICATES,
+      PERMISSIONS.PARTICIPATE_DISCUSSIONS,
+      PERMISSIONS.ENROLL_USER,
+    ],
+  },
+
+  AUDITOR: {
+    name: 'auditor',
+    displayName: 'Auditor',
+    description: 'Read-only access to reports and audit logs',
+    permissions: [
+      PERMISSIONS.VIEW_ALL_REPORTS,
+      PERMISSIONS.EXPORT_REPORTS,
+      PERMISSIONS.VIEW_COMPLIANCE_REPORTS,
+      PERMISSIONS.VIEW_AUDIT_LOGS,
+      PERMISSIONS.EXPORT_AUDIT_LOGS,
+    ],
+  },
+};
+
+module.exports = { ROLES };
