@@ -1,4 +1,4 @@
-const { Course, CourseMaterial, User, AuditLog } = require('../models');
+const { Course, CourseMaterial, User, AuditLog, Enrollment } = require('../models');
 const { createAuditLog } = require('../utils/auditLogger');
 const { Op } = require('sequelize');
 
@@ -88,7 +88,14 @@ const getAllCourses = async (req, res) => {
           as: 'creator',
           attributes: ['id', 'firstName', 'lastName', 'email',],
         },
+        {
+          model: Enrollment,
+          as: 'enrollments',
+          attributes: ['id']
+        }
       ],
+
+
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['createdAt', 'DESC']],
@@ -125,23 +132,10 @@ const getMyCourses = async (req, res) => {
       },
       include: [
         {
-          model: User,
-          as: 'creator',
-          attributes: ['id', 'firstName', 'lastName', 'email',],
-        },
-        {
-          model: CourseMaterial,
-          as: 'materials',
-          order: [['order', 'ASC']],
-        },
-        {
-          model: require('../models').Quiz,
-          as: 'quizzes',
-        },
-        {
-          model: require('../models').Assignment,
-          as: 'assignments',
-        },
+          model: Enrollment,
+          as: 'enrollments',
+          attributes: ['id']
+        }
       ],
     });
 

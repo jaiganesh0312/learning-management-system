@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardBody, Button, Chip } from "@heroui/react";
+import { Card, CardBody, Button, Chip, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { certificateService } from '@/services';
@@ -36,10 +36,8 @@ export default function CertificateView() {
     };
 
     const handleDownload = () => {
-        // In a real implementation, this would download the PDF
         console.log('Downloading certificate:', certificate.id);
-        // You could trigger a download by creating a link element
-        // or calling a backend endpoint that generates/returns the PDF
+
     };
 
     const handleShare = () => {
@@ -52,8 +50,12 @@ export default function CertificateView() {
             }).catch(err => console.log('Share failed:', err));
         } else {
             // Fallback - copy link to clipboard
+            addToast({
+                title: 'Link copied to clipboard',
+                description: 'The certificate link has been copied to your clipboard',
+                color: 'success',
+            });
             navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard!');
         }
     };
 
