@@ -1,44 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardBody, Button, Input, Select, SelectItem } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { courseService } from '@/services';
 import { motion } from 'framer-motion';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+// Zod validation schema with conditional validation
+const createMaterialSchema = z.object({
+    title: z.string().min(1, 'Title is required').min(3, 'Title must be at least 3 characters'),
+    description: z.string().min(1, 'Description is required').min(10, 'Description must be at least 10 characters'),
+    type: z.enum(['video', 'pdf', 'scorm', 'link'], {
+        required_error: 'Material type is required',
+    }),
+    url: z.string().optional(),
+    file: z.any().optional(),
+}).superRefine((data, ctx) => {
+    // Conditional validation based on type
+    if (data.type === 'link') {
+        if (!data.url || data.url.trim() === '') {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'URL is required for link type',
+                path: ['url'],
+            });
+        } else if (!/^https?:\/\/.+/.test(data.url)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'URL must be a valid HTTP/HTTPS URL',
+                path: ['url'],
+            });
+        }
+    } else {
+        if (!data.file || (data.file instanceof FileList && data.file.length === 0)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'File is required for this material type',
+                path: ['file'],
+            });
+        }
+    }
+});
 
 export default function CreateCourseMaterial() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [uploading, setUploading] = useState(false);
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        type: 'video',
-        url: '',
-        file: null
+    const [selectedFile, setSelectedFile] = useState(null);
+    const fileInputRef = useRef(null);
+
+    const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+        resolver: zodResolver(createMaterialSchema),
+        defaultValues: {
+            title: '',
+            description: '',
+            type: 'video',
+            url: '',
+            file: null,
+        },
     });
 
+    const materialType = watch('type');
+
+    const handleFileSelect = () => {
+        fileInputRef.current?.click();
+    };
+    const handleFileRemove = () => {
+        setSelectedFile(null);
+        setValue('file', null);
+    };
+
     const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setFormData({ ...formData, file: e.target.files[0] });
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            setValue('file', file, { shouldValidate: true });
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    };
+
+    const onSubmit = async (data) => {
         try {
             setUploading(true);
-            const data = new FormData();
-            data.append('title', formData.title);
-            data.append('description', formData.description);
-            data.append('type', formData.type);
+            const formData = new FormData();
+            formData.append('title', data.title);
+            formData.append('description', data.description);
+            formData.append('type', data.type);
 
-            if (formData.type === 'link') {
-                data.append('fileUrl', formData.url);
-            } else if (formData.file) {
-                data.append('file', formData.file);
+            if (data.type === 'link') {
+                formData.append('fileUrl', data.url);
+            } else if (data.file) {
+                formData.append('file', data.file);
             }
 
-            const response = await courseService.uploadCourseMaterial(id, data);
+            const response = await courseService.uploadCourseMaterial(id, formData);
             if (response?.data?.success) {
                 navigate(`/creator/courses/${id}/materials`);
             }
@@ -59,25 +123,13 @@ export default function CreateCourseMaterial() {
                     transition={{ duration: 0.5 }}
                     className="mb-8"
                 >
-                    <Button
-                        variant="light"
-                        startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/materials`)}
-                        className="mb-4 text-gray-600 dark:text-gray-400"
-                    >
-                        Back to Course Materials
-                    </Button>
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl shadow-lg">
-                            <Icon icon="mdi:upload" className="text-4xl text-white" />
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                            <Icon icon="mdi:upload" className="text-white text-lg" />
                         </div>
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                Add Course Material
-                            </h1>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                Upload content for your course
-                            </p>
+                        <div>
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Add Course Material</h3>
+                            <p className="text-sm text-gray-500">Upload course material</p>
                         </div>
                     </div>
                 </motion.div>
@@ -88,93 +140,157 @@ export default function CreateCourseMaterial() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
                             <CardBody className="p-8 gap-6">
-                                <Input
-                                    label="Title"
-                                    placeholder="Material title"
-                                    variant="bordered"
-                                    labelPlacement="outside"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    startContent={<Icon icon="mdi:format-title" className="text-cyan-500" />}
-                                    classNames={{
-                                        inputWrapper: "hover:border-cyan-400 focus-within:!border-cyan-500",
-                                        label: "text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    }}
-                                    isRequired
+                                <Controller
+                                    name="title"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Input
+                                            {...field}
+                                            label="Title"
+                                            placeholder="Material title"
+                                            variant="bordered"
+                                            labelPlacement="outside"
+                                            startContent={<Icon icon="mdi:format-title" />}
+                                            isInvalid={!!errors.title}
+                                            errorMessage={errors.title?.message}
+                                        />
+                                    )}
                                 />
 
-                                <Input
-                                    label="Description"
-                                    placeholder="Brief description"
-                                    variant="bordered"
-                                    labelPlacement="outside"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    startContent={<Icon icon="mdi:text" className="text-teal-500" />}
-                                    classNames={{
-                                        inputWrapper: "hover:border-teal-400 focus-within:!border-teal-500",
-                                        label: "text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    }}
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Input
+                                            {...field}
+                                            label="Description"
+                                            placeholder="Brief description"
+                                            variant="bordered"
+                                            labelPlacement="outside"
+                                            startContent={<Icon icon="mdi:text" />}
+                                            isInvalid={!!errors.description}
+                                            errorMessage={errors.description?.message}
+                                        />
+                                    )}
                                 />
 
-                                <Select
-                                    label="Type"
-                                    variant="bordered"
-                                    labelPlacement="outside"
-                                    selectedKeys={[formData.type]}
-                                    onSelectionChange={(keys) => setFormData({ ...formData, type: Array.from(keys)[0] })}
-                                    startContent={<Icon icon="mdi:shape-outline" className="text-emerald-500" />}
-                                    classNames={{
-                                        trigger: "hover:border-emerald-400 focus:border-emerald-500",
-                                        label: "text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    }}
-                                >
-                                    <SelectItem key="video" startContent={<Icon icon="mdi:video" className="text-rose-500" />}>Video</SelectItem>
-                                    <SelectItem key="pdf" startContent={<Icon icon="mdi:file-pdf-box" className="text-amber-500" />}>PDF Document</SelectItem>
-                                    <SelectItem key="scorm" startContent={<Icon icon="mdi:package-variant-closed" className="text-violet-500" />}>SCORM Package</SelectItem>
-                                    <SelectItem key="link" startContent={<Icon icon="mdi:link" className="text-cyan-500" />}>External Link</SelectItem>
-                                </Select>
+                                <Controller
+                                    name="type"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            label="Type"
+                                            variant="bordered"
+                                            labelPlacement="outside"
+                                            selectedKeys={[field.value]}
+                                            onSelectionChange={(keys) => {
+                                                const value = Array.from(keys)[0];
+                                                field.onChange(value);
+                                                // Reset file/url when type changes
+                                                setSelectedFile(null);
+                                                setValue('file', null);
+                                                setValue('url', '');
+                                            }}
+                                            startContent={<Icon icon="mdi:shape-outline" />}
+                                            isInvalid={!!errors.type}
+                                            errorMessage={errors.type?.message}
+                                        >
+                                            <SelectItem key="video" startContent={<Icon icon="mdi:video" className="text-rose-500" />}>Video</SelectItem>
+                                            <SelectItem key="pdf" startContent={<Icon icon="mdi:file-pdf-box" className="text-amber-500" />}>PDF Document</SelectItem>
+                                            <SelectItem key="scorm" startContent={<Icon icon="mdi:package-variant-closed" className="text-violet-500" />}>SCORM Package</SelectItem>
+                                            <SelectItem key="link" startContent={<Icon icon="mdi:link" className="text-cyan-500" />}>External Link</SelectItem>
+                                        </Select>
+                                    )}
+                                />
 
-                                {formData.type === 'link' ? (
-                                    <Input
-                                        label="URL"
-                                        placeholder="https://..."
-                                        variant="bordered"
-                                        labelPlacement="outside"
-                                        value={formData.url}
-                                        onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                                        startContent={<Icon icon="mdi:link" className="text-cyan-500" />}
-                                        classNames={{
-                                            inputWrapper: "hover:border-cyan-400 focus-within:!border-cyan-500",
-                                            label: "text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        }}
-                                        isRequired
+                                {materialType === 'link' ? (
+                                    <Controller
+                                        name="url"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Input
+                                                {...field}
+                                                label="URL"
+                                                placeholder="https://..."
+                                                variant="bordered"
+                                                labelPlacement="outside"
+                                                startContent={<Icon icon="mdi:link" className="text-cyan-500" />}
+                                                isInvalid={!!errors.url}
+                                                errorMessage={errors.url?.message}
+                                            />
+                                        )}
                                     />
                                 ) : (
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Upload File</label>
-                                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 text-center hover:border-cyan-400 transition-colors">
-                                            <input
-                                                type="file"
-                                                onChange={handleFileChange}
-                                                className="block w-full text-sm text-gray-500 
-                                                    file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 
-                                                    file:text-sm file:font-semibold 
-                                                    file:bg-gradient-to-r file:from-cyan-500 file:to-teal-600 file:text-white 
-                                                    hover:file:shadow-lg hover:file:shadow-cyan-500/25 file:transition-all file:cursor-pointer"
-                                                required
-                                            />
-                                            {formData.file && (
-                                                <p className="mt-2 text-sm text-cyan-600 dark:text-cyan-400">
-                                                    <Icon icon="mdi:check-circle" className="inline mr-1" />
-                                                    {formData.file.name}
-                                                </p>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Upload File
+                                        </label>
+
+                                        {/* Hidden File Input */}
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                            accept={
+                                                materialType === "video"
+                                                    ? "video/*"
+                                                    : materialType === "pdf"
+                                                        ? "application/pdf"
+                                                        : materialType === "scorm"
+                                                            ? ".zip"
+                                                            : "*"
+                                            }
+                                        />
+
+                                        {/* Upload Button + File Info */}
+                                        <div className="flex items-center gap-3">
+                                            <Button
+                                                type="button"
+                                                variant="shadow"
+                                                color="success"
+                                                onPress={handleFileSelect}
+                                                startContent={<Icon icon="mdi:upload" className="text-lg" />}
+                                            >
+                                                Choose File
+                                            </Button>
+
+                                            {/* File Name + Size */}
+                                            {selectedFile && (
+                                                <div className="flex items-center gap-3 p-2 border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-700 rounded-md">
+                                                    <div className="flex flex-col leading-tight ">
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[200px]">
+                                                            {selectedFile.name}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {formatFileSize(selectedFile.size)}
+                                                        </span>
+                                                    </div>
+                                                    <Button
+                                                        isIconOnly
+                                                        color='danger'
+                                                        size='sm'
+                                                        variant='flat'
+                                                        onPress={handleFileRemove}
+                                                    >
+                                                        <Icon icon="mdi:delete" className='w-4 h-4' />
+                                                    </Button>
+                                                </div>
+
                                             )}
                                         </div>
+
+                                        {/* Validation Error */}
+                                        {errors.file && (
+                                            <p className="text-xs text-danger mt-1">
+                                                {errors.file.message}
+                                            </p>
+                                        )}
                                     </div>
+
                                 )}
 
                                 <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">

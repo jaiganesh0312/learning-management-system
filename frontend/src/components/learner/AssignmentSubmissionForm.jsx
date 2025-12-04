@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Card, CardBody, CardHeader, Button, Textarea, Divider, Chip, addToast } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import assessmentService from '@/services/assessmentService';
+import { ConfirmModal } from '@/components/common';
 
 const createSubmissionSchema = (assignment) => {
     const hasTextSubmission = assignment.submissionType === 'text' || assignment.submissionType === 'both';
@@ -23,6 +24,7 @@ const createSubmissionSchema = (assignment) => {
 export default function AssignmentSubmissionForm({ assignment, onSuccess, isOverdue }) {
     const [uploadedFile, setUploadedFile] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const submissionSchema = createSubmissionSchema(assignment);
 
@@ -86,11 +88,13 @@ export default function AssignmentSubmissionForm({ assignment, onSuccess, isOver
 
     const onSubmit = async (data) => {
         if (isOverdue) {
-            const confirmLate = window.confirm(
-                'This assignment is overdue. Your submission will be marked as late. Continue?'
-            );
-            if (!confirmLate) return;
+            setShowConfirmModal(true);
+            return;
         }
+        await submitAssignment(data);
+    };
+
+    const submitAssignment = async (data) => {
 
         try {
             setIsSubmitting(true);
@@ -133,6 +137,7 @@ export default function AssignmentSubmissionForm({ assignment, onSuccess, isOver
             })
         } finally {
             setIsSubmitting(false);
+            setShowConfirmModal(false);
         }
     };
 
@@ -270,6 +275,21 @@ export default function AssignmentSubmissionForm({ assignment, onSuccess, isOver
                     </div>
                 </form>
             </CardBody>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={() => {
+                    const formData = control._formValues;
+                    submitAssignment(formData);
+                }}
+                title="Late Submission"
+                message="This assignment is overdue. Your submission will be marked as late. Continue?"
+                confirmText="Submit Anyway"
+                cancelText="Cancel"
+                confirmColor="warning"
+                icon="mdi:clock-alert"
+            />
         </Card>
     );
 }

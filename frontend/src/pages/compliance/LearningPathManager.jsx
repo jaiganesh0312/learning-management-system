@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { learningPathService, complianceService, courseService, departmentService } from '@/services';
-import { PageHeader, LoadingSpinner, DataTable, EmptyState } from '@/components/common';
+import { PageHeader, LoadingSpinner, DataTable, EmptyState, ConfirmModal } from '@/components/common';
 import {
     Card,
     CardBody,
@@ -44,6 +44,8 @@ export default function LearningPathManager() {
     const [selectedPath, setSelectedPath] = useState(null);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isAssignOpen, onOpen: onAssignOpen, onClose: onAssignClose } = useDisclosure();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [pathToDelete, setPathToDelete] = useState(null);
 
     // Path form
     const {
@@ -125,11 +127,16 @@ export default function LearningPathManager() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this learning path?')) return;
+    const handleDelete = (id) => {
+        setPathToDelete(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!pathToDelete) return;
 
         try {
-            const response = await learningPathService.deleteLearningPath(id);
+            const response = await learningPathService.deleteLearningPath(pathToDelete);
             if (response?.data?.success) {
                 addToast({ title: "Success!", description: 'Learning path deleted successfully', color: 'success' });
                 fetchData();
@@ -139,6 +146,9 @@ export default function LearningPathManager() {
         } catch (error) {
             console.error('Error deleting learning path:', error);
             addToast({ title: "Error!", description: 'Failed to delete learning path', color: 'danger' });
+        } finally {
+            setShowConfirmModal(false);
+            setPathToDelete(null);
         }
     };
 
@@ -445,6 +455,18 @@ export default function LearningPathManager() {
                         </form>
                     </ModalContent>
                 </Modal>
+
+                <ConfirmModal
+                    isOpen={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    onConfirm={confirmDelete}
+                    title="Delete Learning Path"
+                    message="Are you sure you want to delete this learning path? This action cannot be undone."
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    confirmColor="danger"
+                    icon="mdi:delete-alert"
+                />
             </div>
         </div>
     );

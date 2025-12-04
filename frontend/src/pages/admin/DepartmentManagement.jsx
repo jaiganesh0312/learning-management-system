@@ -3,7 +3,7 @@ import { Card, CardBody, Button, Chip, Modal, ModalContent, ModalHeader, ModalBo
 import { Icon } from "@iconify/react";
 import { motion } from 'framer-motion';
 import { departmentService, roleService } from '@/services';
-import { PageHeader, LoadingSpinner, DataTable } from '@/components/common';
+import { PageHeader, LoadingSpinner, DataTable, ConfirmModal } from '@/components/common';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,6 +25,8 @@ export default function DepartmentManagement() {
     const [users, setUsers] = useState([]);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [editingId, setEditingId] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [deptToDelete, setDeptToDelete] = useState(null);
 
     const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(departmentSchema),
@@ -95,14 +97,22 @@ export default function DepartmentManagement() {
         setEditingId(null);
     };
 
-    const handleDelete = async (id) => {
-        if (confirm('Are you sure you want to delete this department?')) {
-            try {
-                await departmentService.deleteDepartment(id);
-                fetchData();
-            } catch (error) {
-                console.error('Error deleting department:', error);
-            }
+    const handleDelete = (id) => {
+        setDeptToDelete(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deptToDelete) return;
+
+        try {
+            await departmentService.deleteDepartment(deptToDelete);
+            fetchData();
+        } catch (error) {
+            console.error('Error deleting department:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setDeptToDelete(null);
         }
     };
 
@@ -312,6 +322,18 @@ export default function DepartmentManagement() {
                         </form>
                     </ModalContent>
                 </Modal>
+
+                <ConfirmModal
+                    isOpen={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    onConfirm={confirmDelete}
+                    title="Delete Department"
+                    message="Are you sure you want to delete this department? This action cannot be undone."
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    confirmColor="danger"
+                    icon="mdi:office-building-remove"
+                />
             </motion.div>
         </div>
     );

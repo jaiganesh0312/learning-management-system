@@ -6,7 +6,7 @@ import {
     Chip
 } from "@heroui/react";
 import { learningPathService, courseService } from '@/services';
-import { PageHeader, LoadingSpinner } from '@/components/common';
+import { PageHeader, LoadingSpinner, ConfirmModal } from '@/components/common';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -53,6 +53,8 @@ export default function EditLearningPath() {
     const [pathCourses, setPathCourses] = useState([]);
     const [availableCourses, setAvailableCourses] = useState([]);
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedCourseId, setSelectedCourseId] = useState(null);
 
     const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(learningPathSchema),
@@ -144,14 +146,20 @@ export default function EditLearningPath() {
         }
     };
 
-    const handleRemoveCourse = async (courseId) => {
-        if (confirm('Are you sure you want to remove this course from the learning path?')) {
-            try {
-                await learningPathService.removeCourseFromPath(id, courseId);
-                await fetchLearningPath();
-            } catch (error) {
-                console.error('Error removing course:', error);
-            }
+    const handleRemoveCourse = (courseId) => {
+        setSelectedCourseId(courseId);
+        setShowConfirmModal(true);
+    };
+
+    const confirmRemoveCourse = async () => {
+        try {
+            await learningPathService.removeCourseFromPath(id, selectedCourseId);
+            await fetchLearningPath();
+        } catch (error) {
+            console.error('Error removing course:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setSelectedCourseId(null);
         }
     };
 
@@ -592,6 +600,18 @@ export default function EditLearningPath() {
                     </form>
                 </ModalContent>
             </Modal>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmRemoveCourse}
+                title="Remove Course"
+                message="Are you sure you want to remove this course from the learning path?"
+                confirmText="Remove"
+                cancelText="Cancel"
+                confirmColor="danger"
+                icon="mdi:book-remove"
+            />
         </div>
     );
 }

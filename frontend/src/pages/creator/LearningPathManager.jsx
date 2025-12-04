@@ -7,7 +7,7 @@ import {
 import { Icon } from "@iconify/react";
 import { motion } from 'framer-motion';
 import { learningPathService } from '@/services';
-import { PageHeader, LoadingSpinner, DataTable } from '@/components/common';
+import { PageHeader, LoadingSpinner, DataTable, ConfirmModal } from '@/components/common';
 
 // Animation variants
 const containerVariants = {
@@ -30,6 +30,8 @@ export default function LearningPathManager() {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedPathId, setSelectedPathId] = useState(null);
 
     useEffect(() => {
         fetchPaths();
@@ -54,14 +56,20 @@ export default function LearningPathManager() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (confirm('Are you sure you want to delete this learning path?')) {
-            try {
-                await learningPathService.deleteLearningPath(id);
-                fetchPaths();
-            } catch (error) {
-                console.error('Error deleting learning path:', error);
-            }
+    const handleDelete = (id) => {
+        setSelectedPathId(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await learningPathService.deleteLearningPath(selectedPathId);
+            fetchPaths();
+        } catch (error) {
+            console.error('Error deleting learning path:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setSelectedPathId(null);
         }
     };
 
@@ -242,6 +250,18 @@ export default function LearningPathManager() {
                     </Card>
                 </motion.div>
             </motion.div>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmDelete}
+                title="Delete Learning Path"
+                message="Are you sure you want to delete this learning path? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmColor="danger"
+                icon="mdi:delete-alert"
+            />
         </div>
     );
 }

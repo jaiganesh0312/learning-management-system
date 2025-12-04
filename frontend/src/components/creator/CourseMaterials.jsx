@@ -8,6 +8,8 @@ import { Icon } from "@iconify/react";
 import { useNavigate } from 'react-router-dom';
 import { courseService } from '@/services';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { ConfirmModal } from '@/components/common';
 
 // Animation variants
 const containerVariants = {
@@ -25,15 +27,23 @@ const itemVariants = {
 
 export default function CourseMaterials({ courseId, materials = [], onUpdate }) {
     const navigate = useNavigate();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedMaterialId, setSelectedMaterialId] = useState(null);
 
-    const handleDelete = async (materialId) => {
-        if (confirm('Are you sure you want to delete this material?')) {
-            try {
-                await courseService.deleteCourseMaterial(courseId, materialId);
-                onUpdate();
-            } catch (error) {
-                console.error('Error deleting material:', error);
-            }
+    const handleDelete = (materialId) => {
+        setSelectedMaterialId(materialId);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await courseService.deleteCourseMaterial(courseId, selectedMaterialId);
+            onUpdate();
+        } catch (error) {
+            console.error('Error deleting material:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setSelectedMaterialId(null);
         }
     };
 
@@ -162,6 +172,18 @@ export default function CourseMaterials({ courseId, materials = [], onUpdate }) 
                     </Card>
                 </motion.div>
             )}
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmDelete}
+                title="Delete Material"
+                message="Are you sure you want to delete this material? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmColor="danger"
+                icon="mdi:file-remove"
+            />
         </motion.div>
     );
 }

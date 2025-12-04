@@ -24,6 +24,8 @@ export default function TakeQuiz() {
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [results, setResults] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [unansweredCount, setUnansweredCount] = useState(0);
 
     useEffect(() => {
         loadQuizData();
@@ -107,13 +109,17 @@ export default function TakeQuiz() {
     const handleSubmitQuiz = async () => {
         if (isSubmitting) return;
 
-        const unansweredCount = questions.length - Object.keys(answers).length;
-        if (unansweredCount > 0) {
-            const confirmSubmit = window.confirm(
-                `You have ${unansweredCount} unanswered question(s). Are you sure you want to submit?`
-            );
-            if (!confirmSubmit) return;
+        const unanswered = questions.length - Object.keys(answers).length;
+        if (unanswered > 0) {
+            setUnansweredCount(unanswered);
+            setShowConfirmModal(true);
+            return;
         }
+
+        await submitQuiz();
+    };
+
+    const submitQuiz = async () => {
 
         try {
             setIsSubmitting(true);
@@ -153,6 +159,7 @@ export default function TakeQuiz() {
             });
         } finally {
             setIsSubmitting(false);
+            setShowConfirmModal(false);
         }
     };
 
@@ -289,6 +296,18 @@ export default function TakeQuiz() {
                     />
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={submitQuiz}
+                title="Unanswered Questions"
+                message={`You have ${unansweredCount} unanswered question(s). Are you sure you want to submit?`}
+                confirmText="Submit Anyway"
+                cancelText="Go Back"
+                confirmColor="warning"
+                icon="mdi:alert-circle"
+            />
         </motion.div>
     );
 }

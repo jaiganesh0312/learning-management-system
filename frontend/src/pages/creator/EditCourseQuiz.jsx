@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardBody, Button, Input, Textarea, Checkbox, Chip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { assessmentService } from '@/services';
-import { LoadingSpinner } from '@/components/common';
+import { LoadingSpinner, ConfirmModal } from '@/components/common';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -27,6 +27,8 @@ export default function EditCourseQuiz() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [questions, setQuestions] = useState([]);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedQuestionId, setSelectedQuestionId] = useState(null);
 
     const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(quizSchema),
@@ -105,14 +107,20 @@ export default function EditCourseQuiz() {
         }
     };
 
-    const handleDeleteQuestion = async (questionId) => {
-        if (confirm('Are you sure you want to delete this question?')) {
-            try {
-                await assessmentService.deleteQuestion(questionId);
-                fetchQuestions();
-            } catch (error) {
-                console.error('Error deleting question:', error);
-            }
+    const handleDeleteQuestion = (questionId) => {
+        setSelectedQuestionId(questionId);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDeleteQuestion = async () => {
+        try {
+            await assessmentService.deleteQuestion(selectedQuestionId);
+            fetchQuestions();
+        } catch (error) {
+            console.error('Error deleting question:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setSelectedQuestionId(null);
         }
     };
 
@@ -461,6 +469,18 @@ export default function EditCourseQuiz() {
                     </Card>
                 </motion.div>
             </div>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmDeleteQuestion}
+                title="Delete Question"
+                message="Are you sure you want to delete this question? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmColor="danger"
+                icon="mdi:help-circle-remove"
+            />
         </div>
     );
 }

@@ -7,6 +7,8 @@ import { Icon } from "@iconify/react";
 import { assessmentService } from '@/services';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { ConfirmModal } from '@/components/common';
 
 // Animation variants
 const containerVariants = {
@@ -24,15 +26,23 @@ const itemVariants = {
 
 export default function CourseAssignments({ courseId, assignments = [], onUpdate }) {
     const navigate = useNavigate();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedAssignmentId, setSelectedAssignmentId] = useState(null);
 
-    const handleDelete = async (id) => {
-        if (confirm('Are you sure you want to delete this assignment?')) {
-            try {
-                await assessmentService.deleteAssignment(id);
-                onUpdate();
-            } catch (error) {
-                console.error('Error deleting assignment:', error);
-            }
+    const handleDelete = (id) => {
+        setSelectedAssignmentId(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await assessmentService.deleteAssignment(selectedAssignmentId);
+            onUpdate();
+        } catch (error) {
+            console.error('Error deleting assignment:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setSelectedAssignmentId(null);
         }
     };
 
@@ -149,6 +159,18 @@ export default function CourseAssignments({ courseId, assignments = [], onUpdate
                     ))
                 )}
             </motion.div>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmDelete}
+                title="Delete Assignment"
+                message="Are you sure you want to delete this assignment? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmColor="danger"
+                icon="mdi:clipboard-remove"
+            />
         </motion.div>
     );
 }

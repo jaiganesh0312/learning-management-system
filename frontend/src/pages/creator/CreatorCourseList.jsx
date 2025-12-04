@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { courseService } from '@/services';
-import { PageHeader, LoadingSpinner, DataTable, EmptyState } from '@/components/common';
+import { PageHeader, LoadingSpinner, DataTable, EmptyState, ConfirmModal } from '@/components/common';
 
 const itemVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -13,6 +13,8 @@ const itemVariants = {
 export default function CreatorCourseList() {
     const [loading, setLoading] = useState(true);
     const [courses, setCourses] = useState([]);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedCourseId, setSelectedCourseId] = useState(null);
 
     useEffect(() => {
         fetchCourses();
@@ -32,14 +34,20 @@ export default function CreatorCourseList() {
         }
     };
 
-    const handleDelete = async (courseId) => {
-        if (confirm('Are you sure you want to delete this course?')) {
-            try {
-                await courseService.deleteCourse(courseId);
-                fetchCourses();
-            } catch (error) {
-                console.error('Error deleting course:', error);
-            }
+    const handleDelete = (courseId) => {
+        setSelectedCourseId(courseId);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await courseService.deleteCourse(selectedCourseId);
+            fetchCourses();
+        } catch (error) {
+            console.error('Error deleting course:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setSelectedCourseId(null);
         }
     };
 
@@ -139,6 +147,18 @@ export default function CreatorCourseList() {
                     />
                 )}
             </motion.div>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmDelete}
+                title="Delete Course"
+                message="Are you sure you want to delete this course? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmColor="danger"
+                icon="mdi:delete-alert"
+            />
         </div>
     );
 }

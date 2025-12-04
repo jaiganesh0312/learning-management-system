@@ -7,6 +7,8 @@ import { Icon } from "@iconify/react";
 import { assessmentService } from '@/services';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { ConfirmModal } from '@/components/common';
 
 // Animation variants
 const containerVariants = {
@@ -24,15 +26,23 @@ const itemVariants = {
 
 export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
     const navigate = useNavigate();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedQuizId, setSelectedQuizId] = useState(null);
 
-    const handleDeleteQuiz = async (id) => {
-        if (confirm('Are you sure you want to delete this quiz? All questions will also be deleted.')) {
-            try {
-                await assessmentService.deleteQuiz(id);
-                onUpdate();
-            } catch (error) {
-                console.error('Error deleting quiz:', error);
-            }
+    const handleDeleteQuiz = (id) => {
+        setSelectedQuizId(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDeleteQuiz = async () => {
+        try {
+            await assessmentService.deleteQuiz(selectedQuizId);
+            onUpdate();
+        } catch (error) {
+            console.error('Error deleting quiz:', error);
+        } finally {
+            setShowConfirmModal(false);
+            setSelectedQuizId(null);
         }
     };
 
@@ -149,6 +159,18 @@ export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
                     ))
                 )}
             </motion.div>
+
+            <ConfirmModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmDeleteQuiz}
+                title="Delete Quiz"
+                message="Are you sure you want to delete this quiz? All questions will also be deleted."
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmColor="danger"
+                icon="mdi:quiz"
+            />
         </motion.div>
     );
 }
