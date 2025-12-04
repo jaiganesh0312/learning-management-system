@@ -1,56 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-    Card, CardBody, Button, Input, Select, SelectItem,
+    Card, CardBody, Button,
     Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
-    Modal, ModalContent, ModalHeader, ModalBody, ModalFooter,
-    Tooltip, Chip, useDisclosure
+    Tooltip, Chip
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { useNavigate } from 'react-router-dom';
 import { courseService } from '@/services';
+import { motion } from 'framer-motion';
+
+// Animation variants
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.05 }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+};
 
 export default function CourseMaterials({ courseId, materials = [], onUpdate }) {
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const [uploading, setUploading] = useState(false);
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        type: 'video',
-        url: '',
-        file: null
-    });
-
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setFormData({ ...formData, file: e.target.files[0] });
-        }
-    };
-
-    const handleSubmit = async (onClose) => {
-        try {
-            setUploading(true);
-            const data = new FormData();
-            data.append('title', formData.title);
-            data.append('description', formData.description);
-            data.append('type', formData.type);
-
-            if (formData.type === 'link') {
-                data.append('fileUrl', formData.url);
-            } else if (formData.file) {
-                data.append('file', formData.file);
-            }
-
-            const response = await courseService.uploadCourseMaterial(courseId, data);
-            if (response?.data?.success) {
-                onUpdate();
-                onClose();
-                setFormData({ title: '', description: '', type: 'video', url: '', file: null });
-            }
-        } catch (error) {
-            console.error('Error uploading material:', error);
-        } finally {
-            setUploading(false);
-        }
-    };
+    const navigate = useNavigate();
 
     const handleDelete = async (materialId) => {
         if (confirm('Are you sure you want to delete this material?')) {
@@ -73,121 +47,121 @@ export default function CourseMaterials({ courseId, materials = [], onUpdate }) 
         }
     };
 
+    const getColorForType = (type) => {
+        switch (type) {
+            case 'video': return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
+            case 'pdf': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
+            case 'scorm': return 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300';
+            case 'link': return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300';
+            default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+        }
+    };
+
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Course Materials</h3>
-                <Button color="primary" startContent={<Icon icon="mdi:upload" />} onPress={onOpen}>
+        <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="space-y-6"
+        >
+            <motion.div variants={itemVariants} className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                        <Icon icon="mdi:folder-multiple" className="text-white text-lg" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Course Materials</h3>
+                        <p className="text-sm text-gray-500">Upload and manage course content</p>
+                    </div>
+                </div>
+                <Button
+                    startContent={<Icon icon="mdi:upload" />}
+                    onPress={() => navigate(`/creator/courses/${courseId}/materials/create`)}
+                    className="bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-shadow"
+                >
                     Add Material
                 </Button>
-            </div>
+            </motion.div>
 
             {materials.length === 0 ? (
-                <Card>
-                    <CardBody>
-                        <p className="text-gray-500 text-center py-8">No materials uploaded yet.</p>
-                    </CardBody>
-                </Card>
+                <motion.div variants={itemVariants}>
+                    <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-transparent shadow-none">
+                        <CardBody className="py-16 flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/30 dark:to-teal-900/30 flex items-center justify-center mb-4">
+                                <Icon icon="mdi:folder-open-outline" className="text-3xl text-cyan-600 dark:text-cyan-400" />
+                            </div>
+                            <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">No materials uploaded yet</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Upload videos, documents, or links for your course</p>
+                            <Button
+                                variant="flat"
+                                startContent={<Icon icon="mdi:upload" />}
+                                onPress={() => navigate(`/creator/courses/${courseId}/materials/create`)}
+                                className="bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
+                            >
+                                Upload First Material
+                            </Button>
+                        </CardBody>
+                    </Card>
+                </motion.div>
             ) : (
-                <Table aria-label="Course materials table">
-                    <TableHeader>
-                        <TableColumn>TYPE</TableColumn>
-                        <TableColumn>TITLE</TableColumn>
-                        <TableColumn>SIZE/DURATION</TableColumn>
-                        <TableColumn>ACTIONS</TableColumn>
-                    </TableHeader>
-                    <TableBody>
-                        {materials.map((material) => (
-                            <TableRow key={material.id}>
-                                <TableCell>
-                                    <Chip
-                                        startContent={<Icon icon={getIconForType(material.type)} />}
-                                        variant="flat"
-                                        color="primary"
-                                    >
-                                        {material.type.toUpperCase()}
-                                    </Chip>
-                                </TableCell>
-                                <TableCell>
-                                    <div>
-                                        <p className="font-semibold">{material.title}</p>
-                                        <p className="text-tiny text-gray-500">{material.description}</p>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    {material.duration ? `${material.duration} min` :
-                                        material.fileSize ? `${(material.fileSize / 1024 / 1024).toFixed(2)} MB` : '-'}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex gap-2">
-                                        <Tooltip content="Delete">
-                                            <span className="text-lg text-danger cursor-pointer active:opacity-50" onClick={() => handleDelete(material.id)}>
-                                                <Icon icon="mdi:trash-can" />
+                <motion.div variants={itemVariants}>
+                    <Card className="border border-gray-200/60 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-none overflow-hidden">
+                        <div className="h-1 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500" />
+                        <Table aria-label="Course materials table" classNames={{
+                            th: "bg-gray-50/80 dark:bg-gray-800/50"
+                        }}>
+                            <TableHeader>
+                                <TableColumn>TYPE</TableColumn>
+                                <TableColumn>TITLE</TableColumn>
+                                <TableColumn>SIZE/DURATION</TableColumn>
+                                <TableColumn>ACTIONS</TableColumn>
+                            </TableHeader>
+                            <TableBody>
+                                {materials.map((material, index) => (
+                                    <TableRow key={material.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <TableCell>
+                                            <Chip
+                                                startContent={<Icon icon={getIconForType(material.type)} />}
+                                                variant="flat"
+                                                className={getColorForType(material.type)}
+                                            >
+                                                {material.type.toUpperCase()}
+                                            </Chip>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div>
+                                                <p className="font-semibold text-gray-900 dark:text-white">{material.title}</p>
+                                                <p className="text-tiny text-gray-500">{material.description}</p>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                {material.duration ? `${material.duration} min` :
+                                                    material.fileSize ? `${(material.fileSize / 1024 / 1024).toFixed(2)} MB` : '-'}
                                             </span>
-                                        </Tooltip>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex gap-2">
+                                                <Tooltip content="Delete">
+                                                    <Button
+                                                        isIconOnly
+                                                        size="sm"
+                                                        variant="light"
+                                                        className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                                                        onPress={() => handleDelete(material.id)}
+                                                    >
+                                                        <Icon icon="mdi:trash-can" className="text-lg" />
+                                                    </Button>
+                                                </Tooltip>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Card>
+                </motion.div>
             )}
-
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                <ModalContent>
-                    {(onClose) => (
-                        <>
-                            <ModalHeader>Add Course Material</ModalHeader>
-                            <ModalBody>
-                                <Input
-                                    label="Title"
-                                    placeholder="Material title"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                />
-                                <Input
-                                    label="Description"
-                                    placeholder="Brief description"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                />
-                                <Select
-                                    label="Type"
-                                    selectedKeys={[formData.type]}
-                                    onSelectionChange={(keys) => setFormData({ ...formData, type: Array.from(keys)[0] })}
-                                >
-                                    <SelectItem key="video">Video</SelectItem>
-                                    <SelectItem key="pdf">PDF Document</SelectItem>
-                                    <SelectItem key="scorm">SCORM Package</SelectItem>
-                                    <SelectItem key="link">External Link</SelectItem>
-                                </Select>
-
-                                {formData.type === 'link' ? (
-                                    <Input
-                                        label="URL"
-                                        placeholder="https://..."
-                                        value={formData.url}
-                                        onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                                    />
-                                ) : (
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm">Upload File</label>
-                                        <input type="file" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                                    </div>
-                                )}
-                            </ModalBody>
-                            <ModalFooter>
-                                <Button color="danger" variant="light" onPress={onClose}>
-                                    Cancel
-                                </Button>
-                                <Button color="primary" onPress={() => handleSubmit(onClose)} isLoading={uploading}>
-                                    Upload
-                                </Button>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-        </div>
+        </motion.div>
     );
 }

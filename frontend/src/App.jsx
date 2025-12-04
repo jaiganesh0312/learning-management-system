@@ -44,6 +44,16 @@ import SystemSettings from '@/pages/admin/SystemSettings';
 import CreatorCourseList from '@/pages/creator/CreatorCourseList';
 import CreateCourse from '@/pages/creator/CreateCourse';
 import EditCourse from '@/pages/creator/EditCourse';
+import CourseDetailView from '@/pages/creator/CourseDetailView';
+import ManageCourseMaterials from '@/pages/creator/ManageCourseMaterials';
+import ManageCourseQuizzes from '@/pages/creator/ManageCourseQuizzes';
+import ManageCourseAssignments from '@/pages/creator/ManageCourseAssignments';
+import CreateCourseMaterial from '@/pages/creator/CreateCourseMaterial';
+import CreateCourseQuiz from '@/pages/creator/CreateCourseQuiz';
+import EditCourseQuiz from '@/pages/creator/EditCourseQuiz';
+import CreateQuizQuestion from '@/pages/creator/CreateQuizQuestion';
+import CreateCourseAssignment from '@/pages/creator/CreateCourseAssignment';
+import EditCourseAssignment from '@/pages/creator/EditCourseAssignment';
 import CreatorAnalytics from '@/pages/creator/CreatorAnalytics';
 import LearningPathManager from '@/pages/creator/LearningPathManager';
 import CreateLearningPath from '@/pages/creator/CreateLearningPath';
@@ -133,7 +143,17 @@ function App() {
                           <Routes>
                             <Route path="courses" element={<CreatorCourseList />} />
                             <Route path="courses/create" element={<CreateCourse />} />
+                            <Route path="courses/:id/view" element={<CourseDetailView />} />
                             <Route path="courses/:id/edit" element={<EditCourse />} />
+                            <Route path="courses/:id/materials" element={<ManageCourseMaterials />} />
+                            <Route path="courses/:id/materials/create" element={<CreateCourseMaterial />} />
+                            <Route path="courses/:id/quizzes" element={<ManageCourseQuizzes />} />
+                            <Route path="courses/:id/quizzes/create" element={<CreateCourseQuiz />} />
+                            <Route path="courses/:id/quizzes/:quizId/edit" element={<EditCourseQuiz />} />
+                            <Route path="courses/:id/quizzes/:quizId/questions/create" element={<CreateQuizQuestion />} />
+                            <Route path="courses/:id/assignments" element={<ManageCourseAssignments />} />
+                            <Route path="courses/:id/assignments/create" element={<CreateCourseAssignment />} />
+                            <Route path="courses/:id/assignments/:assignmentId/edit" element={<EditCourseAssignment />} />
                             <Route path="learning-paths" element={<LearningPathManager />} />
                             <Route path="learning-paths/create" element={<CreateLearningPath />} />
                             <Route path="learning-paths/:id/edit" element={<EditLearningPath />} />

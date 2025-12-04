@@ -72,11 +72,11 @@ export default function CreatorCourseList() {
 
     const rowActions = [
         {
-            label: 'Edit',
-            icon: 'mdi:pencil',
+            label: 'View',
+            icon: 'mdi:eye',
             variant: 'light',
             color: 'primary',
-            onClick: (course) => window.location.href = `/creator/courses/${course.id}/edit`
+            onClick: (course) => window.location.href = `/creator/courses/${course.id}/view`
         },
         {
             label: 'Toggle Status',

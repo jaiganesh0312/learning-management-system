@@ -165,13 +165,14 @@ const getMyCourses = async (req, res) => {
 const getCourse = async (req, res) => {
   try {
     const { id } = req.params;
+    const { Enrollment, CourseProgress, QuizAttempt } = require('../models');
 
     const course = await Course.findByPk(id, {
       include: [
         {
           model: User,
           as: 'creator',
-          attributes: ['id', 'firstName', 'lastName', 'email',],
+          attributes: ['id', 'firstName', 'lastName', 'email'],
         },
         {
           model: CourseMaterial,
@@ -181,10 +182,33 @@ const getCourse = async (req, res) => {
         {
           model: require('../models').Quiz,
           as: 'quizzes',
+          include: [
+            {
+              model: require('../models').Question,
+              as: 'questions',
+              attributes: ['id'],
+            },
+          ],
         },
         {
           model: require('../models').Assignment,
           as: 'assignments',
+        },
+        {
+          model: Enrollment,
+          as: 'enrollments',
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'firstName', 'lastName', 'email'],
+            },
+            {
+              model: CourseProgress,
+              as: 'courseProgress',
+              attributes: ['status', 'timeSpent', 'completionPercentage', 'lastAccessedAt'],
+            },
+          ],
         },
       ],
     });
@@ -195,10 +219,22 @@ const getCourse = async (req, res) => {
         message: 'Course not found',
       });
     }
+   
+    // Add question count to quizzes
+    const courseData = course.toJSON();
+    if (courseData.quizzes) {
+      courseData.quizzes = courseData.quizzes.map(quiz => ({
+        ...quiz,
+        questionCount: quiz.questions?.length || 0,
+        questions: undefined, // Remove questions array from response
+      }));
+    }
 
     res.status(200).json({
       success: true,
-      data: course,
+      data: {
+        ...courseData,
+      },
     });
   } catch (error) {
     console.error('Error fetching course:', error);
