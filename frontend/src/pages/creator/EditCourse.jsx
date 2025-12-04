@@ -142,6 +142,7 @@ export default function EditCourse() {
                                                 labelPlacement="outside"
                                                 isInvalid={!!errors.title}
                                                 errorMessage={errors.title?.message}
+                                                description="A catchy and descriptive title for your course."
                                                 classNames={{
                                                     label: "text-sm font-medium text-gray-700 dark:text-gray-300"
                                                 }}
@@ -155,8 +156,10 @@ export default function EditCourse() {
                                         render={({ field }) => (
                                             <Textarea
                                                 {...field}
+                                                isRequired
                                                 label="Description"
                                                 placeholder="Describe the course"
+                                                description="Detailed overview of the course content and objectives."
                                                 variant="bordered"
                                                 labelPlacement="outside"
                                                 minRows={4}
@@ -176,6 +179,7 @@ export default function EditCourse() {
                                             render={({ field }) => (
                                                 <Input
                                                     {...field}
+                                                    isRequired
                                                     label="Category"
                                                     placeholder="e.g., Programming"
                                                     variant="bordered"
@@ -197,6 +201,7 @@ export default function EditCourse() {
                                                 <Input
                                                     {...field}
                                                     type="number"
+                                                    isRequired
                                                     label="Duration"
                                                     placeholder="e.g., 10"
                                                     variant="bordered"
@@ -218,6 +223,7 @@ export default function EditCourse() {
                                             render={({ field }) => (
                                                 <Select
                                                     label="Level"
+                                                    isRequired
                                                     placeholder="Select level"
                                                     variant="bordered"
                                                     labelPlacement="outside"
