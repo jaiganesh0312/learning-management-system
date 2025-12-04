@@ -146,7 +146,7 @@ export default function CreateCourse() {
                                         )}
                                     />
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <Controller
                                             name="category"
                                             control={control}
@@ -198,9 +198,7 @@ export default function CreateCourse() {
                                                 </Select>
                                             )}
                                         />
-                                    </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <Controller
                                             name="duration"
                                             control={control}
