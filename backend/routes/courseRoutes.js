@@ -60,4 +60,11 @@ router.get(
   assessmentController.getCourseAssessments
 );
 
+// Reorder course materials
+router.put(
+  '/:courseId/materials/reorder',
+  requirePermission(PERMISSIONS.UPLOAD_COURSE_MATERIAL),
+  courseController.updateMaterialOrder
+);
+
 module.exports = router;

@@ -26,9 +26,6 @@ export default function EditCourseQuiz() {
     const { id, quizId } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [questions, setQuestions] = useState([]);
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [selectedQuestionId, setSelectedQuestionId] = useState(null);
 
     const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(quizSchema),
@@ -48,7 +45,6 @@ export default function EditCourseQuiz() {
 
     useEffect(() => {
         fetchQuiz();
-        fetchQuestions();
     }, [quizId]);
 
     const fetchQuiz = async () => {
@@ -77,18 +73,6 @@ export default function EditCourseQuiz() {
         }
     };
 
-    const fetchQuestions = async () => {
-        try {
-            const response = await assessmentService.getQuizQuestions(quizId);
-            if (response?.data?.success) {
-                setQuestions(response.data.data || []);
-            }
-        } catch (error) {
-            console.error('Error fetching questions:', error);
-            setQuestions([]);
-        }
-    };
-
     const onSubmit = async (data) => {
         try {
             const payload = {
@@ -104,23 +88,6 @@ export default function EditCourseQuiz() {
             navigate(`/creator/courses/${id}/quizzes`);
         } catch (error) {
             console.error('Error updating quiz:', error);
-        }
-    };
-
-    const handleDeleteQuestion = (questionId) => {
-        setSelectedQuestionId(questionId);
-        setShowConfirmModal(true);
-    };
-
-    const confirmDeleteQuestion = async () => {
-        try {
-            await assessmentService.deleteQuestion(selectedQuestionId);
-            fetchQuestions();
-        } catch (error) {
-            console.error('Error deleting question:', error);
-        } finally {
-            setShowConfirmModal(false);
-            setSelectedQuestionId(null);
         }
     };
 
@@ -396,91 +363,29 @@ export default function EditCourseQuiz() {
                         </Card>
                     </form>
 
-                    {/* Questions Section */}
+                    {/* Manage Questions Card */}
                     <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
                         <CardBody className="p-8">
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex justify-between items-center">
                                 <div>
                                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Questions</h3>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        Manage quiz questions and their answers
+                                        Manage quiz questions and their order
                                     </p>
                                 </div>
                                 <Button
                                     color="primary"
-                                    startContent={<Icon icon="mdi:plus" />}
-                                    onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions/create`)}
+                                    startContent={<Icon icon="mdi:format-list-checks" />}
+                                    onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions`)}
                                     className="font-medium"
                                 >
-                                    Add Question
+                                    Manage Questions
                                 </Button>
                             </div>
-
-                            {questions.length === 0 ? (
-                                <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                                    <Icon icon="mdi:help-circle-outline" className="text-4xl text-gray-400 mb-2" />
-                                    <p className="text-gray-500 dark:text-gray-400 mb-3">No questions added yet</p>
-                                    <Button
-                                        size="sm"
-                                        variant="flat"
-                                        color="primary"
-                                        startContent={<Icon icon="mdi:plus" />}
-                                        onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions/create`)}
-                                    >
-                                        Add First Question
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {questions.map((q, idx) => (
-                                        <Card key={q.id} className="border border-gray-200 dark:border-gray-800">
-                                            <CardBody className="p-4">
-                                                <div className="flex justify-between items-start gap-3">
-                                                    <div className="flex-1">
-                                                        <p className="font-medium text-gray-900 dark:text-white">
-                                                            <span className="text-gray-400 mr-2">{idx + 1}.</span>
-                                                            {q.questionText}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <Chip size="sm" variant="flat">
-                                                                {q.questionType?.replace('_', ' ')}
-                                                            </Chip>
-                                                            <Chip size="sm" variant="flat" color="primary">
-                                                                {q.points} pts
-                                                            </Chip>
-                                                        </div>
-                                                    </div>
-                                                    <Button
-                                                        isIconOnly
-                                                        size="sm"
-                                                        color="danger"
-                                                        variant="light"
-                                                        onPress={() => handleDeleteQuestion(q.id)}
-                                                    >
-                                                        <Icon icon="mdi:trash-can" className="text-lg" />
-                                                    </Button>
-                                                </div>
-                                            </CardBody>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
                         </CardBody>
                     </Card>
                 </motion.div>
             </div>
-
-            <ConfirmModal
-                isOpen={showConfirmModal}
-                onClose={() => setShowConfirmModal(false)}
-                onConfirm={confirmDeleteQuestion}
-                title="Delete Question"
-                message="Are you sure you want to delete this question? This action cannot be undone."
-                confirmText="Delete"
-                cancelText="Cancel"
-                confirmColor="danger"
-                icon="mdi:help-circle-remove"
-            />
         </div>
     );
 }

@@ -17,10 +17,33 @@ router.post(
   assessmentController.createQuiz
 );
 
+router.put(
+  '/quizzes/:id',
+  requirePermission(PERMISSIONS.EDIT_QUIZ),
+  assessmentController.updateQuiz
+);
+
 router.post(
   '/quizzes/:quizId/questions',
   requirePermission(PERMISSIONS.EDIT_QUIZ),
   assessmentController.addQuestion
+);
+
+router.get(
+  '/quizzes/:quizId/questions',
+  assessmentController.getQuizQuestions
+);
+
+router.put(
+  '/quizzes/:quizId/questions/reorder',
+  requirePermission(PERMISSIONS.EDIT_QUIZ),
+  assessmentController.updateQuestionOrder
+);
+
+router.delete(
+  '/questions/:id',
+  requirePermission(PERMISSIONS.EDIT_QUIZ),
+  assessmentController.deleteQuestion
 );
 
 router.delete(

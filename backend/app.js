@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "https://btp9hpfw-5173.inc1.devtunnels.ms"],
   credentials: true,
 }));
 app.use(morgan("dev"));

@@ -484,6 +484,51 @@ const deleteCourseMaterial = async (req, res) => {
   }
 };
 
+/**
+ * Update material order
+ */
+const updateMaterialOrder = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { materials } = req.body; // Array of { id, order }
+
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    if (course.createdBy !== req.user.id && !req.user.permissions.includes('manage_system_settings')) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Update order for each material
+    await Promise.all(
+      materials.map(({ id, order }) =>
+        CourseMaterial.update({ order }, { where: { id, courseId } })
+      )
+    );
+
+    await createAuditLog({
+      action: 'REORDER_MATERIALS',
+      resource: 'CourseMaterial',
+      resourceId: courseId,
+      details: { materialCount: materials.length }
+    }, req);
+
+    res.status(200).json({
+      success: true,
+      message: 'Materials reordered successfully',
+    });
+  } catch (error) {
+    console.error('Error reordering materials:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reordering materials',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createCourse,
   getMyCourses,
@@ -494,4 +539,5 @@ module.exports = {
   uploadCourseMaterial,
   deleteCourseMaterial,
   togglePublishStatus,
+  updateMaterialOrder,
 };

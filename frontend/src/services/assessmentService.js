@@ -246,6 +246,68 @@ const getAssignment = async (assignmentId) => {
 };
 
 /**
+ * Update quiz
+ * @param {string} id - Quiz UUID
+ * @param {Object} data - Quiz data to update
+ * @returns {Promise<Object>} Response
+ */
+const updateQuiz = async (id, data) => {
+  try {
+    const response = await api.put(`/assessments/quizzes/${id}`, data);
+    return response;
+  } catch (error) {
+    console.error('Update quiz error:', error);
+    return error.response;
+  }
+};
+
+/**
+ * Delete question
+ * @param {string} id - Question UUID
+ * @returns {Promise<Object>} Response
+ */
+const deleteQuestion = async (id) => {
+  try {
+    const response = await api.delete(`/assessments/questions/${id}`);
+    return response;
+  } catch (error) {
+    console.error('Delete question error:', error);
+    return error.response;
+  }
+};
+
+/**
+ * Get quiz questions
+ * @param {string} quizId - Quiz UUID
+ * @returns {Promise<Object>} Response
+ */
+const getQuizQuestions = async (quizId) => {
+  try {
+    const response = await api.get(`/assessments/quizzes/${quizId}/questions`);
+    return response;
+  } catch (error) {
+    console.error('Get quiz questions error:', error);
+    return error.response;
+  }
+};
+
+/**
+ * Update question order
+ * @param {string} quizId - Quiz UUID
+ * @param {Array} questions - Array of {id, order}
+ * @returns {Promise<Object>} Response
+ */
+const updateQuestionOrder = async (quizId, questions) => {
+  try {
+    const response = await api.put(`/assessments/quizzes/${quizId}/questions/reorder`, { questions });
+    return response;
+  } catch (error) {
+    console.error('Update question order error:', error);
+    return error.response;
+  }
+};
+
+/**
  * Get course assessments (quizzes and assignments)
  * @param {string} courseId - Course UUID
  * @returns {Promise<Object>} Response
@@ -262,9 +324,13 @@ const getCourseAssessments = async (courseId) => {
 
 const assessmentService = {
   getQuiz,
+  updateQuiz,
   createQuiz,
   deleteQuiz,
   addQuestion,
+  deleteQuestion,
+  getQuizQuestions,
+  updateQuestionOrder,
   submitQuizAttempt,
   getQuizAttempts,
   createAssignment,

@@ -41,17 +41,20 @@ export default function CreateQuizQuestion() {
         try {
             const payload = {
                 ...data,
-                quizId,
                 points: parseInt(data.points),
                 options: data.questionType === 'multiple_choice' ? data.options.filter(opt => opt.trim()) : [],
                 order: data.order || 0,
             };
 
-            await assessmentService.createQuestion(payload);
+            await assessmentService.addQuestion(quizId, payload);
             navigate(`/creator/courses/${id}/quizzes/${quizId}/edit`);
         } catch (error) {
             console.error('Error creating question:', error);
         }
+    };
+
+    const onError = (error) => {
+        console.error('Error creating question:', error);
     };
 
     return (
@@ -93,7 +96,7 @@ export default function CreateQuizQuestion() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                    <form onSubmit={handleSubmit(onSubmit)}>
+                    <form onSubmit={handleSubmit(onSubmit, onError)}>
                         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
                             <CardBody className="p-8 gap-6">
                                 <Controller
@@ -207,8 +210,6 @@ export default function CreateQuizQuestion() {
                                                 placeholder="Select correct option"
                                                 variant="bordered"
                                                 labelPlacement="outside"
-                                                selectedKeys={field.value ? [field.value] : []}
-                                                onSelectionChange={(keys) => field.onChange(Array.from(keys)[0])}
                                                 startContent={<Icon icon="mdi:check-circle-outline" className="text-success" />}
                                                 isInvalid={!!errors.correctAnswer}
                                                 errorMessage={errors.correctAnswer?.message}
@@ -216,9 +217,9 @@ export default function CreateQuizQuestion() {
                                                     label: "text-sm font-medium text-gray-700 dark:text-gray-300"
                                                 }}
                                             >
-                                                {watch('options')?.filter(opt => opt?.trim()).map((opt, idx) => (
-                                                    <SelectItem key={opt} value={opt}>
-                                                        {String.fromCharCode(65 + idx)}: {opt}
+                                                {watch('options')?.filter(opt => opt?.trim()).map((opt, idx) => ({ label: String.fromCharCode(65 + idx) + ': ' + opt, value: opt })).map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>
+                                                        {opt.label}
                                                     </SelectItem>
                                                 ))}
                                             </Select>
@@ -229,8 +230,6 @@ export default function CreateQuizQuestion() {
                                                 placeholder="Select answer"
                                                 variant="bordered"
                                                 labelPlacement="outside"
-                                                selectedKeys={field.value ? [field.value] : []}
-                                                onSelectionChange={(keys) => field.onChange(Array.from(keys)[0])}
                                                 startContent={<Icon icon="mdi:check-circle-outline" className="text-success" />}
                                                 isInvalid={!!errors.correctAnswer}
                                                 errorMessage={errors.correctAnswer?.message}

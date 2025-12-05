@@ -177,6 +177,22 @@ const deleteCourseMaterial = async (courseId, materialId) => {
   }
 };
 
+/**
+ * Update material order
+ * @param {string} courseId - Course UUID
+ * @param {Array} materials - Array of {id, order}
+ * @returns {Promise<Object>} Response
+ */
+const updateMaterialOrder = async (courseId, materials) => {
+  try {
+    const response = await api.put(`/courses/${courseId}/materials/reorder`, { materials });
+    return response;
+  } catch (error) {
+    console.error('Update material order error:', error);
+    return error.response;
+  }
+};
+
 const courseService = {
   getAllCourses,
   getMyCourses,
@@ -187,6 +203,7 @@ const courseService = {
   uploadCourseMaterial,
   deleteCourseMaterial,
   togglePublishStatus,
+  updateMaterialOrder,
 };
 
 export default courseService;

@@ -52,6 +52,7 @@ import CreateCourseMaterial from '@/pages/creator/CreateCourseMaterial';
 import CreateCourseQuiz from '@/pages/creator/CreateCourseQuiz';
 import EditCourseQuiz from '@/pages/creator/EditCourseQuiz';
 import CreateQuizQuestion from '@/pages/creator/CreateQuizQuestion';
+import ViewQuizQuestions from '@/pages/creator/ViewQuizQuestions';
 import CreateCourseAssignment from '@/pages/creator/CreateCourseAssignment';
 import EditCourseAssignment from '@/pages/creator/EditCourseAssignment';
 import CreatorAnalytics from '@/pages/creator/CreatorAnalytics';
@@ -150,6 +151,7 @@ function App() {
                             <Route path="courses/:id/quizzes" element={<ManageCourseQuizzes />} />
                             <Route path="courses/:id/quizzes/create" element={<CreateCourseQuiz />} />
                             <Route path="courses/:id/quizzes/:quizId/edit" element={<EditCourseQuiz />} />
+                            <Route path="courses/:id/quizzes/:quizId/questions" element={<ViewQuizQuestions />} />
                             <Route path="courses/:id/quizzes/:quizId/questions/create" element={<CreateQuizQuestion />} />
                             <Route path="courses/:id/assignments" element={<ManageCourseAssignments />} />
                             <Route path="courses/:id/assignments/create" element={<CreateCourseAssignment />} />
