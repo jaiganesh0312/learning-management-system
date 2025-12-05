@@ -362,28 +362,6 @@ export default function EditCourseQuiz() {
                             </CardBody>
                         </Card>
                     </form>
-
-                    {/* Manage Questions Card */}
-                    <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
-                        <CardBody className="p-8">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Questions</h3>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        Manage quiz questions and their order
-                                    </p>
-                                </div>
-                                <Button
-                                    color="primary"
-                                    startContent={<Icon icon="mdi:format-list-checks" />}
-                                    onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions`)}
-                                    className="font-medium"
-                                >
-                                    Manage Questions
-                                </Button>
-                            </div>
-                        </CardBody>
-                    </Card>
                 </motion.div>
             </div>
         </div>

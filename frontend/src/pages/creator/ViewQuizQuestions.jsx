@@ -197,10 +197,10 @@ export default function ViewQuizQuestions() {
                     <Button
                         variant="light"
                         startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/edit`)}
+                        onPress={() => navigate(`/creator/courses/${id}/quizzes`)}
                         className="mb-4 text-gray-600 dark:text-gray-400"
                     >
-                        Back to Edit Quiz
+                        Back to Quizzes
                     </Button>
                     <div className="flex items-start gap-4">
                         <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg">

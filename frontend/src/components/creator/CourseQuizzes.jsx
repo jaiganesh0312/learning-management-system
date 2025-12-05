@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     Card, CardBody, Button,
-    Chip
+    Chip, Tooltip
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { assessmentService } from '@/services';
@@ -132,25 +132,40 @@ export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
                                                 </Chip>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button
-                                                isIconOnly
-                                                size="sm"
-                                                variant="light"
-                                                className="text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20"
-                                                onPress={() => navigate(`/creator/courses/${courseId}/quizzes/${quiz.id}/edit`)}
-                                            >
-                                                <Icon icon="mdi:pencil" className="text-lg" />
-                                            </Button>
-                                            <Button
-                                                isIconOnly
-                                                size="sm"
-                                                variant="light"
-                                                className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-                                                onPress={() => handleDeleteQuiz(quiz.id)}
-                                            >
-                                                <Icon icon="mdi:trash-can" className="text-lg" />
-                                            </Button>
+                                        <div className="flex gap-2">
+                                            <Tooltip content="Manage Questions">
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                                    onPress={() => navigate(`/creator/courses/${courseId}/quizzes/${quiz.id}/questions`)}
+                                                >
+                                                    <Icon icon="mdi:format-list-checks" className="text-lg" />
+                                                </Button>
+                                            </Tooltip>
+                                            <Tooltip content="Edit Quiz">
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    className="text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20"
+                                                    onPress={() => navigate(`/creator/courses/${courseId}/quizzes/${quiz.id}/edit`)}
+                                                >
+                                                    <Icon icon="mdi:pencil" className="text-lg" />
+                                                </Button>
+                                            </Tooltip>
+                                            <Tooltip content="Delete Quiz">
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                                                    onPress={() => handleDeleteQuiz(quiz.id)}
+                                                >
+                                                    <Icon icon="mdi:trash-can" className="text-lg" />
+                                                </Button>
+                                            </Tooltip>
                                         </div>
                                     </div>
                                 </CardBody>
