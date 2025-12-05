@@ -700,13 +700,27 @@ const deleteQuestion = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
+    const quizId = question.quizId;
     await question.destroy();
+
+    // Reorder remaining questions to ensure sequential order
+    const remainingQuestions = await Question.findAll({
+      where: { quizId },
+      order: [['order', 'ASC']],
+    });
+
+    // Update order for each remaining question
+    await Promise.all(
+      remainingQuestions.map((q, index) =>
+        q.update({ order: index })
+      )
+    );
 
     await createAuditLog({
       action: 'DELETE_QUESTION',
       resource: 'Question',
       resourceId: id,
-      details: { quizId: question.quizId }
+      details: { quizId }
     }, req);
 
     res.status(200).json({

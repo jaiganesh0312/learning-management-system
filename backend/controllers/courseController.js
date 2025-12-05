@@ -463,6 +463,19 @@ const deleteCourseMaterial = async (req, res) => {
 
     await material.destroy();
 
+    // Reorder remaining materials to ensure sequential order
+    const remainingMaterials = await CourseMaterial.findAll({
+      where: { courseId },
+      order: [['order', 'ASC']],
+    });
+
+    // Update order for each remaining material
+    await Promise.all(
+      remainingMaterials.map((mat, index) =>
+        mat.update({ order: index })
+      )
+    );
+
     await createAuditLog({
       action: 'DELETE_MATERIAL',
       resource: 'CourseMaterial',
