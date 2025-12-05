@@ -37,6 +37,9 @@ export default function EditCourse() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [currentThumbnail, setCurrentThumbnail] = useState(null);
+    const [thumbnailFile, setThumbnailFile] = useState(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
     const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(courseSchema),
@@ -66,6 +69,7 @@ export default function EditCourse() {
                     duration: course.duration || '',
                     level: course.level || ''
                 });
+                setCurrentThumbnail(course.thumbnail);
             }
         } catch (error) {
             console.error('Error fetching course:', error);
@@ -74,9 +78,43 @@ export default function EditCourse() {
         }
     };
 
+    const handleThumbnailChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+            // Validate file type
+            if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+                alert('Only JPEG, PNG, and WebP images are allowed');
+                return;
+            }
+            setThumbnailFile(file);
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setThumbnailPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeThumbnail = () => {
+        setThumbnailFile(null);
+        setThumbnailPreview(null);
+    };
+
     const onSubmit = async (data) => {
         try {
             await courseService.updateCourse(id, data);
+
+            // Upload new thumbnail if provided
+            if (thumbnailFile) {
+                await courseService.uploadCourseThumbnail(id, thumbnailFile);
+            }
+
             navigate('/creator/courses');
         } catch (error) {
             console.error('Error updating course:', error);
@@ -241,6 +279,67 @@ export default function EditCourse() {
                                                     <SelectItem key="advanced">Advanced</SelectItem>
                                                 </Select>
                                             )}
+                                        />
+                                    </div>
+
+                                    {/* Thumbnail Upload */}
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Course Thumbnail
+                                        </label>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            Upload an image to represent your course (Max 5MB, JPEG/PNG/WebP)
+                                        </p>
+
+                                        {thumbnailPreview || currentThumbnail ? (
+                                            <div className="relative inline-block">
+                                                <img
+                                                    src={thumbnailPreview || `${import.meta.env.VITE_API_URL}${currentThumbnail}`}
+                                                    alt="Course thumbnail"
+                                                    className="w-full max-w-md h-48 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700"
+                                                />
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    color="danger"
+                                                    variant="flat"
+                                                    className="absolute top-2 right-2"
+                                                    onPress={removeThumbnail}
+                                                >
+                                                    <Icon icon="mdi:close" />
+                                                </Button>
+                                                {!thumbnailPreview && (
+                                                    <Button
+                                                        as="label"
+                                                        htmlFor="thumbnail-upload-edit"
+                                                        size="sm"
+                                                        variant="flat"
+                                                        className="absolute bottom-2 right-2 cursor-pointer"
+                                                        startContent={<Icon icon="mdi:pencil" />}
+                                                    >
+                                                        Change
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-3">
+                                                <Button
+                                                    as="label"
+                                                    htmlFor="thumbnail-upload-edit"
+                                                    variant="bordered"
+                                                    startContent={<Icon icon="mdi:image-plus" />}
+                                                    className="cursor-pointer"
+                                                >
+                                                    Choose Image
+                                                </Button>
+                                            </div>
+                                        )}
+                                        <input
+                                            id="thumbnail-upload-edit"
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                                            onChange={handleThumbnailChange}
+                                            className="hidden"
                                         />
                                     </div>
                                 </div>

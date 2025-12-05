@@ -169,10 +169,19 @@ export default function CourseDetailView() {
 
                 {/* Header */}
                 <motion.div variants={fade} className="space-y-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                            <Icon icon="mdi:book-open-page-variant" className="text-white text-2xl" />
-                        </div>
+                    <div className="flex items-start gap-4">
+                        {/* Thumbnail or Icon */}
+                        {course.thumbnail ? (
+                            <img
+                                src={`${import.meta.env.VITE_API_URL}${course.thumbnail}`}
+                                alt={course.title}
+                                className="w-24 h-24 rounded-lg object-cover shadow-lg border-2 border-gray-200"
+                            />
+                        ) : (
+                            <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                                <Icon icon="mdi:book-open-page-variant" className="text-white text-4xl" />
+                            </div>
+                        )}
 
                         <div className="flex-1">
                             <h1 className="text-3xl font-semibold tracking-tight text-gray-900">{course.title}</h1>

@@ -542,6 +542,63 @@ const updateMaterialOrder = async (req, res) => {
   }
 };
 
+/**
+ * Upload course thumbnail
+ */
+const uploadCourseThumbnail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const fs = require('fs');
+    const path = require('path');
+
+    const course = await Course.findByPk(id);
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    // Check ownership or admin permission
+    if (course.createdBy !== req.user.id && !req.user.permissions.includes('manage_system_settings')) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    // Delete old thumbnail file if it exists
+    if (course.thumbnail) {
+      const oldThumbnailPath = path.join(__dirname, '..', course.thumbnail);
+      if (fs.existsSync(oldThumbnailPath)) {
+        fs.unlinkSync(oldThumbnailPath);
+      }
+    }
+
+    // Update course with new thumbnail path
+    const thumbnailUrl = `/uploads/course-thumbnails/${req.file.filename}`;
+    await course.update({ thumbnail: thumbnailUrl });
+
+    await createAuditLog({
+      action: 'UPLOAD_COURSE_THUMBNAIL',
+      resource: 'Course',
+      resourceId: course.id,
+      details: { thumbnail: thumbnailUrl }
+    }, req);
+
+    res.status(200).json({
+      success: true,
+      message: 'Thumbnail uploaded successfully',
+      data: { thumbnail: thumbnailUrl },
+    });
+  } catch (error) {
+    console.error('Error uploading thumbnail:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error uploading thumbnail',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createCourse,
   getMyCourses,
@@ -553,4 +610,5 @@ module.exports = {
   deleteCourseMaterial,
   togglePublishStatus,
   updateMaterialOrder,
+  uploadCourseThumbnail,
 };

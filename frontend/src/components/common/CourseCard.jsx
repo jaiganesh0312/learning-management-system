@@ -21,16 +21,15 @@ export default function CourseCard({ course, showProgress = false, enrollmentPro
             <Card className="border border-gray-200 dark:border-gray-800 h-full">
                 <CardBody className="p-0">
                     <div className="relative">
-                        <Image
-                            src={course.thumbnail || '/placeholder-course.jpg'}
+                        <img
+                            src={`${import.meta.env.VITE_API_URL}${course.thumbnail}`}
                             alt={course.title}
-                            className="w-full h-48 object-cover"
-                            radius="none"
+                            className="w-full h-48"
                         />
                         <div className="absolute top-3 right-3">
                             <Chip
                                 color={levelColors[course.level] || 'default'}
-                                variant="flat"
+                                variant="solid"
                                 size="sm"
                                 className="capitalize"
                             >

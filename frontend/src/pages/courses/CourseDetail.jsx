@@ -128,9 +128,9 @@ export default function CourseDetail() {
                                 {/* Course Thumbnail */}
                                 <div className="md:w-1/3">
                                     <img
-                                        src={course.thumbnail || '/placeholder-course.jpg'}
+                                        src={`${import.meta.env.VITE_API_URL}${course.thumbnail}` || '/placeholder-course.jpg'}
                                         alt={course.title}
-                                        className="w-full rounded-xl object-cover aspect-video"
+                                        className="w-full rounded-xl object-fill aspect-video"
                                     />
                                 </div>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardBody, Button, Input, Textarea, Select, SelectItem } from "@heroui/react";
 import { useNavigate } from 'react-router-dom';
 import { courseService } from '@/services';
@@ -34,6 +34,8 @@ const courseSchema = z.object({
 
 export default function CreateCourse() {
     const navigate = useNavigate();
+    const [thumbnailFile, setThumbnailFile] = useState(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
     const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(courseSchema),
@@ -46,10 +48,45 @@ export default function CreateCourse() {
         }
     });
 
+    const handleThumbnailChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+            // Validate file type
+            if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+                alert('Only JPEG, PNG, and WebP images are allowed');
+                return;
+            }
+            setThumbnailFile(file);
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setThumbnailPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeThumbnail = () => {
+        setThumbnailFile(null);
+        setThumbnailPreview(null);
+    };
+
     const onSubmit = async (data) => {
         try {
             const response = await courseService.createCourse(data);
             if (response?.data?.success) {
+                const courseId = response.data.data.id;
+
+                // Upload thumbnail if provided
+                if (thumbnailFile) {
+                    await courseService.uploadCourseThumbnail(courseId, thumbnailFile);
+                }
+
                 navigate('/creator/courses');
             }
         } catch (error) {
@@ -220,6 +257,55 @@ export default function CreateCourse() {
                                                 />
                                             )}
                                         />
+                                    </div>
+
+                                    {/* Thumbnail Upload */}
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Course Thumbnail
+                                        </label>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            Upload an image to represent your course (Max 5MB, JPEG/PNG/WebP)
+                                        </p>
+
+                                        {thumbnailPreview ? (
+                                            <div className="relative inline-block">
+                                                <img
+                                                    src={thumbnailPreview}
+                                                    alt="Thumbnail preview"
+                                                    className="w-full max-w-md h-48 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700"
+                                                />
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    color="danger"
+                                                    variant="flat"
+                                                    className="absolute top-2 right-2"
+                                                    onPress={removeThumbnail}
+                                                >
+                                                    <Icon icon="mdi:close" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-3">
+                                                <Button
+                                                    as="label"
+                                                    htmlFor="thumbnail-upload"
+                                                    variant="bordered"
+                                                    startContent={<Icon icon="mdi:image-plus" />}
+                                                    className="cursor-pointer"
+                                                >
+                                                    Choose Image
+                                                </Button>
+                                                <input
+                                                    id="thumbnail-upload"
+                                                    type="file"
+                                                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                    onChange={handleThumbnailChange}
+                                                    className="hidden"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

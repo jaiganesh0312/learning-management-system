@@ -193,6 +193,29 @@ const updateMaterialOrder = async (courseId, materials) => {
   }
 };
 
+/**
+ * Upload course thumbnail
+ * @param {string} courseId - Course UUID (required)
+ * @param {File} file - Thumbnail image file
+ * @returns {Promise<Object>} Response with thumbnail URL
+ */
+const uploadCourseThumbnail = async (courseId, file) => {
+  try {
+    const formData = new FormData();
+    formData.append('thumbnail', file);
+    
+    const response = await api.post(`/courses/${courseId}/thumbnail`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error('Upload thumbnail error:', error);
+    return error.response;
+  }
+};
+
 const courseService = {
   getAllCourses,
   getMyCourses,
@@ -204,6 +227,7 @@ const courseService = {
   deleteCourseMaterial,
   togglePublishStatus,
   updateMaterialOrder,
+  uploadCourseThumbnail,
 };
 
 export default courseService;

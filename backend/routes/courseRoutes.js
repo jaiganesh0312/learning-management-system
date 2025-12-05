@@ -6,6 +6,7 @@ const PERMISSIONS = require('../constants/permissions');
 const courseController = require('../controllers/courseController');
 const upload = require('../middlewares/upload'); // Assuming existing upload middleware
 const courseMaterialUpload = require('../middlewares/courseMaterialUpload');
+const courseThumbnailUpload = require('../middlewares/courseThumbnailUpload');
 
 router.use(authMiddleware);
 
@@ -65,6 +66,14 @@ router.put(
   '/:courseId/materials/reorder',
   requirePermission(PERMISSIONS.UPLOAD_COURSE_MATERIAL),
   courseController.updateMaterialOrder
+);
+
+// Upload course thumbnail
+router.post(
+  '/:id/thumbnail',
+  requirePermission(PERMISSIONS.EDIT_COURSE),
+  courseThumbnailUpload.single('thumbnail'),
+  courseController.uploadCourseThumbnail
 );
 
 module.exports = router;

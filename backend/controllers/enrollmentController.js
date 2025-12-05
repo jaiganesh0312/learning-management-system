@@ -94,7 +94,7 @@ const getMyEnrollments = async (req, res) => {
         {
           model: Course,
           as: 'course',
-          attributes: ['id', 'title', 'thumbnail', 'duration', 'level'],
+          attributes: ['id', 'title', 'thumbnail', 'duration', 'level', 'description'],
         },
         {
           model: LearningPath,
