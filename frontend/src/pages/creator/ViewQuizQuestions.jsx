@@ -185,14 +185,19 @@ export default function ViewQuizQuestions() {
     if (loading) return <LoadingSpinner fullPage />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+        <motion.div
+            className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8"
+            initial="hidden"
+            animate="visible"
+            variants={{
+                hidden: { opacity: 0 },
+                visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+            }}
+        >
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
+                {/* Back Button */}
                 <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="mb-8"
+                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
                 >
                     <Button
                         variant="light"
@@ -202,17 +207,26 @@ export default function ViewQuizQuestions() {
                     >
                         Back to Quizzes
                     </Button>
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg">
-                            <Icon icon="mdi:help-circle-multiple" className="text-4xl text-white" />
-                        </div>
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                Quiz Questions
-                            </h1>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                Manage and reorder quiz questions
-                            </p>
+                </motion.div>
+
+                {/* Header */}
+                <motion.div
+                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
+                    className="mb-8"
+                >
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
+                                <Icon icon="mdi:help-circle-multiple" className="text-white text-lg" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                    Quiz Questions
+                                </h1>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Manage and reorder quiz questions
+                                </p>
+                            </div>
                         </div>
                         <Button
                             color="primary"
@@ -227,9 +241,7 @@ export default function ViewQuizQuestions() {
 
                 {/* Questions List */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
+                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
                 >
                     {localQuestions.length === 0 ? (
                         <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-transparent shadow-none">
@@ -284,6 +296,6 @@ export default function ViewQuizQuestions() {
                 confirmColor="danger"
                 icon="mdi:help-circle-remove"
             />
-        </div>
+        </motion.div>
     );
 }

@@ -230,7 +230,7 @@ export default function CourseMaterials({ courseId, materials = [], onUpdate }) 
                     </div>
                     <div>
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Course Materials</h3>
-                        <p className="text-sm text-gray-500">Upload and manage course content</p>
+                        <p className="text-sm text-gray-500">Manage and organize course content and resources</p>
                     </div>
                 </div>
                 <Button
