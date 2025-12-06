@@ -14,7 +14,6 @@ const questionSchema = z.object({
     options: z.array(z.string()).min(2, "At least 2 options required").optional(),
     correctAnswer: z.string().min(1, "Correct answer is required"),
     points: z.coerce.number().min(1, "Points must be at least 1"),
-    order: z.coerce.number().optional(),
     explanation: z.string().optional(),
 });
 
@@ -30,7 +29,6 @@ export default function CreateQuizQuestion() {
             options: ['', '', '', ''],
             correctAnswer: '',
             points: 10,
-            order: 0,
             explanation: ''
         }
     });
@@ -43,11 +41,10 @@ export default function CreateQuizQuestion() {
                 ...data,
                 points: parseInt(data.points),
                 options: data.questionType === 'multiple_choice' ? data.options.filter(opt => opt.trim()) : [],
-                order: data.order || 0,
             };
 
             await assessmentService.addQuestion(quizId, payload);
-            navigate(`/creator/courses/${id}/quizzes/${quizId}/edit`);
+            navigate(`/creator/courses/${id}/quizzes/${quizId}/questions`);
         } catch (error) {
             console.error('Error creating question:', error);
         }

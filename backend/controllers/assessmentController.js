@@ -53,8 +53,10 @@ const createQuiz = async (req, res) => {
 const addQuestion = async (req, res) => {
   try {
     const { quizId } = req.params;
-    const { questionText, questionType, options, correctAnswer, points, order, explanation } = req.body;
+    const { questionText, questionType, options, correctAnswer, points, explanation } = req.body;
 
+    const order = await Question.count({ where: { quizId } });
+  
     const question = await Question.create({
       quizId,
       questionText,

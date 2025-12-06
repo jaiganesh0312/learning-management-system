@@ -45,7 +45,6 @@ export default function ManageCourseMaterials() {
                     <CourseMaterials
                         courseId={id}
                         materials={course.materials || []}
-                        onUpdate={fetchCourse}
                     />
                 </motion.div>
             </div>

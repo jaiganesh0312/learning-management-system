@@ -80,9 +80,6 @@ export default function CoursePlayer() {
                         ...progressData,
                     },
                 }));
-
-                // Refresh enrollment data to get updated overall progress
-                fetchEnrollmentData();
             }
         } catch (error) {
             console.error('Error updating progress:', error);
@@ -123,7 +120,6 @@ export default function CoursePlayer() {
     const completedCount = getCompletedMaterialsCount();
     const totalCount = materials.length;
     const overallProgress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-    console.log(materials);
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Top Bar */}

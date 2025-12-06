@@ -131,7 +131,7 @@ function SortableMaterialCard({ material, index, onDelete, getIconForType, getCo
 }
 
 
-export default function CourseMaterials({ courseId, materials = [], onUpdate }) {
+export default function CourseMaterials({ courseId, materials = [] }) {
     const navigate = useNavigate();
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [selectedMaterialId, setSelectedMaterialId] = useState(null);
@@ -158,7 +158,6 @@ export default function CourseMaterials({ courseId, materials = [], onUpdate }) 
     const confirmDelete = async () => {
         try {
             await courseService.deleteCourseMaterial(courseId, selectedMaterialId);
-            onUpdate();
         } catch (error) {
             console.error('Error deleting material:', error);
         } finally {
@@ -185,7 +184,6 @@ export default function CourseMaterials({ courseId, materials = [], onUpdate }) 
                     order: index
                 }));
                 await courseService.updateMaterialOrder(courseId, materialsWithOrder);
-                onUpdate();
             } catch (error) {
                 console.error('Error updating material order:', error);
                 // Revert on error

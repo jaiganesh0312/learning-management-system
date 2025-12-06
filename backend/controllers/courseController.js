@@ -342,7 +342,7 @@ const deleteCourse = async (req, res) => {
 const uploadCourseMaterial = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { title, description, type, duration, isRequired, order } = req.body;
+    const { title, description, type, duration, isRequired } = req.body;
     
     // Assuming file upload middleware puts file info in req.file
     const fileUrl = req.file ? `/uploads/course-materials/${req.file.filename}` : req.body.fileUrl;
@@ -357,6 +357,8 @@ const uploadCourseMaterial = async (req, res) => {
     if (course.createdBy !== req.user.id && !req.user.permissions.includes('manage_system_settings')) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
+
+    const order = await CourseMaterial.count({ where: { courseId } });
 
     const material = await CourseMaterial.create({
       courseId,
