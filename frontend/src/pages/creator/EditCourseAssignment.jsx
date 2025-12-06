@@ -8,6 +8,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion } from 'framer-motion';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 const assignmentSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
@@ -92,34 +93,15 @@ export default function EditCourseAssignment() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="mb-8"
-                >
-                    <Button
-                        variant="light"
-                        startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/assignments`)}
-                        className="mb-4 text-gray-600 dark:text-gray-400"
-                    >
-                        Back to Course Assignments
-                    </Button>
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
-                            <Icon icon="mdi:pencil" className="text-4xl text-white" />
-                        </div>
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                Edit Assignment
-                            </h1>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                Update assignment details and requirements
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+                {/* Header */}
+                <CreatorPageHeader
+                    title="Edit Assignment"
+                    subtitle="Update assignment details and requirements"
+                    icon="mdi:pencil"
+                    variant="assignment"
+                    backUrl={`/creator/courses/${id}/assignments`}
+                    backLabel="Back to Course Assignments"
+                />
 
                 {/* Form */}
                 <motion.div

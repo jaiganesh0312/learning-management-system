@@ -7,7 +7,8 @@ import {
 import { Icon } from "@iconify/react";
 import { motion } from 'framer-motion';
 import { assessmentService } from '@/services';
-import { PageHeader, LoadingSpinner, DataTable } from '@/components/common';
+import { LoadingSpinner, DataTable } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 export default function GradingDashboard() {
     const [submissions, setSubmissions] = useState([]);
@@ -139,10 +140,11 @@ export default function GradingDashboard() {
                 transition={{ duration: 0.5 }}
                 className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
             >
-                <PageHeader
+                <CreatorPageHeader
                     title="Grading Dashboard"
-                    description="Review and grade student assignments"
+                    subtitle="Review and grade student assignments"
                     icon="mdi:fountain-pen-tip"
+                    variant="grading"
                 />
 
                 <Card className="border border-gray-200 dark:border-gray-800">

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardBody, Button, Input, Select, SelectItem } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { courseService } from '@/services';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 import { motion } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -124,39 +125,14 @@ export default function CreateCourseMaterial() {
             }}
         >
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Back Button */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                >
-                    <Button
-                        variant="light"
-                        startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/materials`)}
-                        className="mb-4 text-gray-600 dark:text-gray-400"
-                    >
-                        Back to Course Materials
-                    </Button>
-                </motion.div>
-
-                {/* Header */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                    className="mb-8"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-                            <Icon icon="mdi:upload" className="text-white text-lg" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                Add Course Material
-                            </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Upload course content and resources
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+                <CreatorPageHeader
+                    title="Add Course Material"
+                    subtitle="Upload course content and resources"
+                    icon="mdi:upload"
+                    variant="material"
+                    backUrl={`/creator/courses/${id}/materials`}
+                    backLabel="Back to Course Materials"
+                />
 
                 {/* Form */}
                 <motion.div

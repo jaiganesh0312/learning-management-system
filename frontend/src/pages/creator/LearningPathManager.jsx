@@ -7,7 +7,8 @@ import {
 import { Icon } from "@iconify/react";
 import { motion } from 'framer-motion';
 import { learningPathService } from '@/services';
-import { PageHeader, LoadingSpinner, DataTable, ConfirmModal } from '@/components/common';
+import { LoadingSpinner, DataTable, ConfirmModal } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 // Animation variants
 const containerVariants = {
@@ -165,20 +166,19 @@ export default function LearningPathManager() {
                 className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
             >
                 <motion.div variants={itemVariants}>
-                    <PageHeader
+                    <CreatorPageHeader
                         title="Learning Paths"
-                        description="Manage learning paths and curriculums"
+                        subtitle="Manage learning paths and curriculums"
                         icon="mdi:road-variant"
-                        action={
-                            <Button
-                                color="primary"
-                                startContent={<Icon icon="mdi:plus" />}
-                                onPress={() => navigate('/creator/learning-paths/create')}
-                                className="bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow"
-                            >
-                                Create Path
-                            </Button>
-                        }
+                        variant="learningPath"
+                        actions={[
+                            {
+                                label: "Create Path",
+                                icon: "mdi:plus",
+                                onClick: () => navigate('/creator/learning-paths/create'),
+                                className: "bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow"
+                            }
+                        ]}
                     />
                 </motion.div>
 

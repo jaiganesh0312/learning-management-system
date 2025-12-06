@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardBody, Button, Input, Textarea, Select, SelectItem } from "@heroui/react";
 import { learningPathService } from '@/services';
-import { PageHeader } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -68,15 +68,13 @@ export default function CreateLearningPath() {
                 className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8"
             >
                 <motion.div variants={itemVariants}>
-                    <PageHeader
+                    <CreatorPageHeader
                         title="Create Learning Path"
-                        description="Define a new learning path or curriculum"
+                        subtitle="Define a new learning path or curriculum"
                         icon="mdi:road-variant"
-                        breadcrumbs={[
-                            { label: 'Dashboard', href: '/dashboard' },
-                            { label: 'Learning Paths', href: '/creator/learning-paths' },
-                            { label: 'Create' }
-                        ]}
+                        variant="learningPath"
+                        backUrl="/creator/learning-paths"
+                        backLabel="Back to Learning Paths"
                     />
                 </motion.div>
 

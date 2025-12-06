@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardBody, Button, Chip } from "@heroui/react";
+import { Card, CardBody, Button, Chip, Skeleton, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { assessmentService } from '@/services';
-import { LoadingSpinner, ConfirmModal } from '@/components/common';
+import { ConfirmModal, EmptyState } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 import { motion } from 'framer-motion';
 import {
     DndContext,
@@ -55,6 +56,7 @@ function SortableQuestionCard({ question, index, onDelete }) {
                             style={{
                                 touchAction: 'none',
                             }}
+                            aria-label="Drag to reorder"
                         >
                             <Icon icon="mdi:drag-vertical" className="text-gray-400 text-xl" />
                         </button>
@@ -92,6 +94,7 @@ function SortableQuestionCard({ question, index, onDelete }) {
                         color="danger"
                         variant="light"
                         onPress={() => onDelete(question.id)}
+                        aria-label="Delete question"
                     >
                         <Icon icon="mdi:trash-can" className="text-lg" />
                     </Button>
@@ -134,6 +137,7 @@ export default function ViewQuizQuestions() {
             }
         } catch (error) {
             console.error('Error fetching questions:', error);
+            addToast({ title: 'Error', description: 'Failed to fetch questions', color: 'danger' });
             setQuestions([]);
         } finally {
             setLoading(false);
@@ -148,9 +152,11 @@ export default function ViewQuizQuestions() {
     const confirmDeleteQuestion = async () => {
         try {
             await assessmentService.deleteQuestion(selectedQuestionId);
+            addToast({ title: 'Success', description: 'Question deleted successfully', color: 'success' });
             fetchQuestions();
         } catch (error) {
             console.error('Error deleting question:', error);
+            addToast({ title: 'Error', description: 'Failed to delete question', color: 'danger' });
         } finally {
             setShowConfirmModal(false);
             setSelectedQuestionId(null);
@@ -174,15 +180,37 @@ export default function ViewQuizQuestions() {
                     order: index
                 }));
                 await assessmentService.updateQuestionOrder(quizId, questionsWithOrder);
+                addToast({ title: 'Success', description: 'Order updated', color: 'success' });
             } catch (error) {
                 console.error('Error updating question order:', error);
+                addToast({ title: 'Error', description: 'Failed to update order', color: 'danger' });
                 // Revert on error
                 setLocalQuestions(questions);
             }
         }
     };
 
-    if (loading) return <LoadingSpinner fullPage />;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="mb-8 flex justify-between items-center">
+                        <div className="flex gap-4 items-center">
+                            <Skeleton className="rounded-xl w-10 h-10" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-6 w-40 rounded-lg" />
+                                <Skeleton className="h-4 w-60 rounded-lg" />
+                            </div>
+                        </div>
+                        <Skeleton className="h-10 w-32 rounded-lg" />
+                    </div>
+                    <div className="space-y-4">
+                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <motion.div
@@ -195,70 +223,35 @@ export default function ViewQuizQuestions() {
             }}
         >
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Back Button */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                >
-                    <Button
-                        variant="light"
-                        startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/quizzes`)}
-                        className="mb-4 text-gray-600 dark:text-gray-400"
-                    >
-                        Back to Quizzes
-                    </Button>
-                </motion.div>
-
-                {/* Header */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                    className="mb-8"
-                >
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                                <Icon icon="mdi:help-circle-multiple" className="text-white text-lg" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                    Quiz Questions
-                                </h1>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Manage and reorder quiz questions
-                                </p>
-                            </div>
-                        </div>
-                        <Button
-                            color="primary"
-                            startContent={<Icon icon="mdi:plus" />}
-                            onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions/create`)}
-                            className="font-medium"
-                        >
-                            Add Question
-                        </Button>
-                    </div>
-                </motion.div>
+                <CreatorPageHeader
+                    title="Quiz Questions"
+                    subtitle="Manage and reorder quiz questions"
+                    icon="mdi:help-circle-multiple"
+                    backUrl={`/creator/courses/${id}/quizzes`}
+                    backLabel="Back to Quizzes"
+                    variant="quiz"
+                    actions={[
+                        {
+                            label: "Add Question",
+                            icon: "mdi:plus",
+                            onClick: () => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions/create`),
+                            color: "primary"
+                        }
+                    ]}
+                />
 
                 {/* Questions List */}
                 <motion.div
                     variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
                 >
                     {localQuestions.length === 0 ? (
-                        <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-transparent shadow-none">
-                            <CardBody className="py-16 flex flex-col items-center text-center">
-                                <Icon icon="mdi:help-circle-outline" className="text-4xl text-gray-400 mb-2" />
-                                <p className="text-gray-500 dark:text-gray-400 mb-3">No questions added yet</p>
-                                <Button
-                                    size="sm"
-                                    variant="flat"
-                                    color="primary"
-                                    startContent={<Icon icon="mdi:plus" />}
-                                    onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions/create`)}
-                                >
-                                    Add First Question
-                                </Button>
-                            </CardBody>
-                        </Card>
+                        <EmptyState
+                            icon="mdi:help-circle-outline"
+                            title="No questions added yet"
+                            description="Create a question to start building your quiz."
+                            actionLabel="Add First Question"
+                            onAction={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/questions/create`)}
+                        />
                     ) : (
                         <DndContext
                             sensors={sensors}

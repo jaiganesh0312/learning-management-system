@@ -7,6 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion } from 'framer-motion';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 const assignmentSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
@@ -69,39 +70,14 @@ export default function CreateCourseAssignment() {
             }}
         >
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Back Button */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                >
-                    <Button
-                        variant="light"
-                        startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/assignments`)}
-                        className="mb-4 text-gray-600 dark:text-gray-400"
-                    >
-                        Back to Course Assignments
-                    </Button>
-                </motion.div>
-
-                {/* Header */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                    className="mb-8"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
-                            <Icon icon="mdi:clipboard-plus" className="text-white text-lg" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                Create New Assignment
-                            </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Configure assignment details and requirements
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+                <CreatorPageHeader
+                    title="Create New Assignment"
+                    subtitle="Configure assignment details and requirements"
+                    icon="mdi:clipboard-plus"
+                    variant="assignment"
+                    backUrl={`/creator/courses/${id}/assignments`}
+                    backLabel="Back to Course Assignments"
+                />
 
                 {/* Form */}
                 <motion.div

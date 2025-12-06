@@ -3,7 +3,8 @@ import { Card, CardBody, CardHeader, Button, Chip, Tabs, Tab, Progress } from "@
 import { Icon } from "@iconify/react";
 import { useNavigate } from 'react-router-dom';
 import { reportingService } from '@/services';
-import { PageHeader, LoadingSpinner, StatCard } from '@/components/common';
+import { LoadingSpinner, StatCard } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 import { motion } from 'framer-motion';
 
 // Animation variants
@@ -82,9 +83,9 @@ export default function CreatorAnalytics() {
                 className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
             >
                 <motion.div variants={itemVariants}>
-                    <PageHeader
+                    <CreatorPageHeader
                         title="Creator Dashboard"
-                        description="Manage and track your course content and student engagement"
+                        subtitle="Manage and track your course content and student engagement"
                         icon="mdi:account-tie"
                     />
                 </motion.div>

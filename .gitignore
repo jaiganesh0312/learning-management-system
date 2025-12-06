@@ -40,3 +40,6 @@ yarn-error.log
 #ignore uploads folder
 uploads
 
+#ignore design.md
+design.md
+

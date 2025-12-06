@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardBody, Button, Chip } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { courseService } from '@/services';
-import { PageHeader, LoadingSpinner, DataTable, EmptyState, ConfirmModal } from '@/components/common';
+import { LoadingSpinner, DataTable, EmptyState, ConfirmModal } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 const itemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
 };
 export default function CreatorCourseList() {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [courses, setCourses] = useState([]);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -79,7 +81,7 @@ export default function CreatorCourseList() {
             icon: 'mdi:eye',
             variant: 'light',
             color: 'primary',
-            onClick: (course) => window.location.href = `/creator/courses/${course.id}/view`
+            onClick: (course) => navigate(`/creator/courses/${course.id}/view`)
         },
         {
             label: 'Delete',
@@ -100,30 +102,20 @@ export default function CreatorCourseList() {
                 transition={{ duration: 0.5 }}
                 className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
             >
-                <motion.div
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="flex justify-between items-center mb-6"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-                            <Icon icon="mdi:folder-multiple" className="text-white text-lg" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">My Courses</h3>
-                            <p className="text-sm text-gray-500">Manage your created courses</p>
-                        </div>
-                    </div>
-                    <Button
-                        startContent={<Icon icon="mdi:folder-plus" />}
-                        as={Link}
-                        to={`/creator/courses/create`}
-                        className="bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-shadow"
-                    >
-                        Create Course
-                    </Button>
-                </motion.div>
+                <CreatorPageHeader
+                    title="My Courses"
+                    subtitle="Manage your created courses"
+                    icon="mdi:folder-multiple"
+                    variant="material"
+                    actions={[
+                        {
+                            label: "Create Course",
+                            icon: "mdi:folder-plus",
+                            onClick: () => navigate('/creator/courses/create'),
+                            className: "bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-shadow"
+                        }
+                    ]}
+                />
 
                 {courses.length > 0 ? (
                     <Card className="border border-gray-200 dark:border-gray-800">
@@ -143,7 +135,7 @@ export default function CreatorCourseList() {
                         title="No courses created yet"
                         description="Start creating courses to share knowledge"
                         actionLabel="Create Course"
-                        onAction={() => window.location.href = '/creator/courses/create'}
+                        onAction={() => navigate('/creator/courses/create')}
                     />
                 )}
             </motion.div>

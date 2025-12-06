@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import {
-    Card, CardBody, Button, Tooltip, Chip
+    Card, CardBody, Button, Tooltip, Chip, addToast
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from 'react-router-dom';
 import { courseService } from '@/services';
 import { motion } from 'framer-motion';
-import { ConfirmModal } from '@/components/common';
+import { ConfirmModal, EmptyState } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 import {
     DndContext,
     closestCenter,
@@ -76,6 +77,7 @@ function SortableMaterialCard({ material, index, onDelete, getIconForType, getCo
                             isIconOnly
                             size="sm"
                             style={{ touchAction: "none" }}
+                            aria-label="Drag to reorder"
                         >
                             <Icon icon="mdi:drag-vertical" className="text-gray-400 text-xl" />
                         </Button>
@@ -119,6 +121,7 @@ function SortableMaterialCard({ material, index, onDelete, getIconForType, getCo
                                 variant="light"
                                 className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
                                 onPress={() => onDelete(material.id)}
+                                aria-label="Delete Material"
                             >
                                 <Icon icon="mdi:trash-can" className="text-lg" />
                             </Button>
@@ -158,8 +161,10 @@ export default function CourseMaterials({ courseId, materials = [] }) {
     const confirmDelete = async () => {
         try {
             await courseService.deleteCourseMaterial(courseId, selectedMaterialId);
+            addToast({ title: 'Success', description: 'Material deleted successfully', color: 'success' });
         } catch (error) {
             console.error('Error deleting material:', error);
+            addToast({ title: 'Error', description: 'Failed to delete material', color: 'danger' });
         } finally {
             setShowConfirmModal(false);
             setSelectedMaterialId(null);
@@ -184,8 +189,10 @@ export default function CourseMaterials({ courseId, materials = [] }) {
                     order: index
                 }));
                 await courseService.updateMaterialOrder(courseId, materialsWithOrder);
+                addToast({ title: 'Success', description: 'Order updated', color: 'success' });
             } catch (error) {
                 console.error('Error updating material order:', error);
+                addToast({ title: 'Error', description: 'Failed to update order', color: 'danger' });
                 // Revert on error
                 setLocalMaterials(materials);
             } finally {
@@ -221,44 +228,31 @@ export default function CourseMaterials({ courseId, materials = [] }) {
             variants={containerVariants}
             className="space-y-6"
         >
-            <motion.div variants={itemVariants} className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-                        <Icon icon="mdi:folder-multiple" className="text-white text-lg" />
-                    </div>
-                    <div>
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Course Materials</h3>
-                        <p className="text-sm text-gray-500">Manage and organize course content and resources</p>
-                    </div>
-                </div>
-                <Button
-                    startContent={<Icon icon="mdi:upload" />}
-                    onPress={() => navigate(`/creator/courses/${courseId}/materials/create`)}
-                    className="bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-shadow"
-                >
-                    Add Material
-                </Button>
-            </motion.div>
+            <CreatorPageHeader
+                title="Course Materials"
+                subtitle="Manage and organize course content and resources"
+                icon="mdi:folder-multiple"
+                variant="material"
+                actions={[
+                    {
+                        label: "Add Material",
+                        icon: "mdi:upload",
+                        onClick: () => navigate(`/creator/courses/${courseId}/materials/create`),
+                        color: "primary",
+                        className: "bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-shadow"
+                    }
+                ]}
+            />
 
             {localMaterials.length === 0 ? (
                 <motion.div variants={itemVariants}>
-                    <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-transparent shadow-none">
-                        <CardBody className="py-16 flex flex-col items-center text-center">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/30 dark:to-teal-900/30 flex items-center justify-center mb-4">
-                                <Icon icon="mdi:folder-open-outline" className="text-3xl text-cyan-600 dark:text-cyan-400" />
-                            </div>
-                            <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">No materials uploaded yet</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Upload videos, documents, or links for your course</p>
-                            <Button
-                                variant="flat"
-                                startContent={<Icon icon="mdi:upload" />}
-                                onPress={() => navigate(`/creator/courses/${courseId}/materials/create`)}
-                                className="bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
-                            >
-                                Upload First Material
-                            </Button>
-                        </CardBody>
-                    </Card>
+                    <EmptyState
+                        icon="mdi:folder-open-outline"
+                        title="No materials uploaded yet"
+                        description="Upload videos, documents, or links for your course"
+                        actionLabel="Upload First Material"
+                        onAction={() => navigate(`/creator/courses/${courseId}/materials/create`)}
+                    />
                 </motion.div>
             ) : (
                 <motion.div variants={itemVariants}>
@@ -307,4 +301,3 @@ export default function CourseMaterials({ courseId, materials = [] }) {
         </motion.div>
     );
 }
-

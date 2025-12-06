@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Card, CardBody, Button,
-    Chip, Tooltip
+    Chip, Tooltip, addToast
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { assessmentService } from '@/services';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { ConfirmModal } from '@/components/common';
+import { ConfirmModal, EmptyState } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 // Animation variants
 const containerVariants = {
@@ -37,9 +37,11 @@ export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
     const confirmDeleteQuiz = async () => {
         try {
             await assessmentService.deleteQuiz(selectedQuizId);
+            addToast({ title: 'Success', description: 'Quiz deleted successfully', color: 'success' });
             onUpdate();
         } catch (error) {
             console.error('Error deleting quiz:', error);
+            addToast({ title: 'Error', description: 'Failed to delete quiz', color: 'danger' });
         } finally {
             setShowConfirmModal(false);
             setSelectedQuizId(null);
@@ -53,45 +55,32 @@ export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
             variants={containerVariants}
             className="space-y-6"
         >
-            <motion.div variants={itemVariants} className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                        <Icon icon="mdi:quiz" className="text-white text-lg" />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quizzes</h3>
-                        <p className="text-sm text-gray-500">Create and manage course quizzes and assessments.</p>
-                    </div>
-                </div>
-                <Button
-                    startContent={<Icon icon="mdi:plus" />}
-                    onPress={() => navigate(`/creator/courses/${courseId}/quizzes/create`)}
-                    className="bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-shadow"
-                >
-                    Create Quiz
-                </Button>
-            </motion.div>
+            <CreatorPageHeader
+                title="Quizzes"
+                subtitle="Create and manage course quizzes and assessments."
+                icon="mdi:quiz"
+                variant="quiz"
+                actions={[
+                    {
+                        label: "Create Quiz",
+                        icon: "mdi:plus",
+                        onClick: () => navigate(`/creator/courses/${courseId}/quizzes/create`),
+                        color: "secondary",
+                        className: "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-shadow"
+                    }
+                ]}
+            />
 
             <motion.div variants={containerVariants} className="grid gap-4">
                 {quizzes.length === 0 ? (
                     <motion.div variants={itemVariants}>
-                        <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-transparent shadow-none">
-                            <CardBody className="py-16 flex flex-col items-center text-center">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 flex items-center justify-center mb-4">
-                                    <Icon icon="mdi:quiz" className="text-3xl text-violet-600 dark:text-violet-400" />
-                                </div>
-                                <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">No quizzes yet</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Create a quiz to assess your students.</p>
-                                <Button
-                                    variant="flat"
-                                    startContent={<Icon icon="mdi:plus" />}
-                                    onPress={() => navigate(`/creator/courses/${courseId}/quizzes/create`)}
-                                    className="bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
-                                >
-                                    Create First Quiz
-                                </Button>
-                            </CardBody>
-                        </Card>
+                        <EmptyState
+                            icon="mdi:quiz"
+                            title="No quizzes yet"
+                            description="Create a quiz to assess your students."
+                            actionLabel="Create First Quiz"
+                            onAction={() => navigate(`/creator/courses/${courseId}/quizzes/create`)}
+                        />
                     </motion.div>
                 ) : (
                     quizzes.map((quiz, index) => (
@@ -140,6 +129,7 @@ export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
                                                     variant="light"
                                                     className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                                     onPress={() => navigate(`/creator/courses/${courseId}/quizzes/${quiz.id}/questions`)}
+                                                    aria-label="Manage Questions"
                                                 >
                                                     <Icon icon="mdi:format-list-checks" className="text-lg" />
                                                 </Button>
@@ -151,6 +141,7 @@ export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
                                                     variant="light"
                                                     className="text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20"
                                                     onPress={() => navigate(`/creator/courses/${courseId}/quizzes/${quiz.id}/edit`)}
+                                                    aria-label="Edit Quiz"
                                                 >
                                                     <Icon icon="mdi:pencil" className="text-lg" />
                                                 </Button>
@@ -162,6 +153,7 @@ export default function CourseQuizzes({ courseId, quizzes = [], onUpdate }) {
                                                     variant="light"
                                                     className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
                                                     onPress={() => handleDeleteQuiz(quiz.id)}
+                                                    aria-label="Delete Quiz"
                                                 >
                                                     <Icon icon="mdi:trash-can" className="text-lg" />
                                                 </Button>

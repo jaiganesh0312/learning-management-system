@@ -7,6 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion } from 'framer-motion';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 const questionSchema = z.object({
     questionText: z.string().min(5, "Question must be at least 5 characters"),
@@ -65,39 +66,14 @@ export default function CreateQuizQuestion() {
             }}
         >
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Back Button */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                >
-                    <Button
-                        variant="light"
-                        startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/quizzes/${quizId}/edit`)}
-                        className="mb-4 text-gray-600 dark:text-gray-400"
-                    >
-                        Back to Edit Quiz
-                    </Button>
-                </motion.div>
-
-                {/* Header */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                    className="mb-8"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                            <Icon icon="mdi:help-circle-outline" className="text-white text-lg" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                Add Question
-                            </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Create a new question for this quiz
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+                <CreatorPageHeader
+                    title="Add Question"
+                    subtitle="Create a new question for this quiz"
+                    icon="mdi:help-circle-outline"
+                    variant="quiz"
+                    backUrl={`/creator/courses/${id}/quizzes/${quizId}/edit`}
+                    backLabel="Back to Edit Quiz"
+                />
 
                 {/* Form */}
                 <motion.div

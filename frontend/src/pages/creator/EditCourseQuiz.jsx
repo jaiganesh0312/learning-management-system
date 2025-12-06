@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardBody, Button, Input, Textarea, Checkbox, Chip } from "@heroui/react";
+import { Card, CardBody, Button, Input, Textarea, Checkbox, Skeleton, addToast } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { assessmentService } from '@/services';
-import { LoadingSpinner, ConfirmModal } from '@/components/common';
+import { ConfirmModal } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -68,6 +69,7 @@ export default function EditCourseQuiz() {
             }
         } catch (error) {
             console.error('Error fetching quiz:', error);
+            addToast({ title: 'Error', description: 'Failed to fetch quiz details', color: 'danger' });
         } finally {
             setLoading(false);
         }
@@ -85,13 +87,39 @@ export default function EditCourseQuiz() {
             };
 
             await assessmentService.updateQuiz(quizId, payload);
+            addToast({ title: 'Success', description: 'Quiz updated successfully', color: 'success' });
             navigate(`/creator/courses/${id}/quizzes`);
         } catch (error) {
             console.error('Error updating quiz:', error);
+            addToast({ title: 'Error', description: 'Failed to update quiz', color: 'danger' });
         }
     };
 
-    if (loading) return <LoadingSpinner fullPage />;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="mb-8 flex gap-4 items-center">
+                        <Skeleton className="w-10 h-10 rounded-xl" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-32 rounded-lg" />
+                            <Skeleton className="h-4 w-48 rounded-lg" />
+                        </div>
+                    </div>
+                    <div className="space-y-6">
+                        <Card><CardBody className="p-8 gap-6">
+                            <Skeleton className="h-14 w-full rounded-lg" />
+                            <Skeleton className="h-24 w-full rounded-lg" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <Skeleton className="h-14 w-full rounded-lg" />
+                                <Skeleton className="h-14 w-full rounded-lg" />
+                            </div>
+                        </CardBody></Card>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <motion.div
@@ -104,39 +132,14 @@ export default function EditCourseQuiz() {
             }}
         >
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Back Button */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                >
-                    <Button
-                        variant="light"
-                        startContent={<Icon icon="mdi:arrow-left" className="text-xl" />}
-                        onPress={() => navigate(`/creator/courses/${id}/quizzes`)}
-                        className="mb-4 text-gray-600 dark:text-gray-400"
-                    >
-                        Back to Course Quizzes
-                    </Button>
-                </motion.div>
-
-                {/* Header */}
-                <motion.div
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
-                    className="mb-8"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                            <Icon icon="mdi:quiz" className="text-white text-lg" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                Edit Quiz
-                            </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Update quiz settings and manage questions
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+                <CreatorPageHeader
+                    title="Edit Quiz"
+                    subtitle="Update quiz settings and manage questions"
+                    icon="mdi:quiz"
+                    backUrl={`/creator/courses/${id}/quizzes`}
+                    backLabel="Back to Course Quizzes"
+                    variant="quiz"
+                />
 
                 {/* Form */}
                 <motion.div

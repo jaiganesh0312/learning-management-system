@@ -6,7 +6,8 @@ import {
     Chip
 } from "@heroui/react";
 import { learningPathService, courseService } from '@/services';
-import { PageHeader, LoadingSpinner, ConfirmModal } from '@/components/common';
+import { LoadingSpinner, ConfirmModal } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -174,15 +175,13 @@ export default function EditLearningPath() {
                 className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
             >
                 <motion.div variants={itemVariants}>
-                    <PageHeader
+                    <CreatorPageHeader
                         title="Edit Learning Path"
-                        description="Manage learning path details and course assignments."
+                        subtitle="Manage learning path details and course assignments"
                         icon="mdi:road-variant"
-                        breadcrumbs={[
-                            { label: 'Dashboard', href: '/dashboard' },
-                            { label: 'Learning Paths', href: '/creator/learning-paths' },
-                            { label: 'Edit' }
-                        ]}
+                        variant="learningPath"
+                        backUrl="/creator/learning-paths"
+                        backLabel="Back to Learning Paths"
                     />
                 </motion.div>
 

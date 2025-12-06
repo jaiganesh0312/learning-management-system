@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ConfirmModal } from '@/components/common';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 // Animation variants
 const containerVariants = {
@@ -53,24 +54,20 @@ export default function CourseAssignments({ courseId, assignments = [], onUpdate
             variants={containerVariants}
             className="space-y-6"
         >
-            <motion.div variants={itemVariants} className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
-                        <Icon icon="mdi:clipboard-text" className="text-white text-lg" />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Assignments</h3>
-                        <p className="text-sm text-gray-500">Create and manage course assignments and projects.</p>
-                    </div>
-                </div>
-                <Button
-                    startContent={<Icon icon="mdi:plus" />}
-                    onPress={() => navigate(`/creator/courses/${courseId}/assignments/create`)}
-                    className="bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-shadow"
-                >
-                    Create Assignment
-                </Button>
-            </motion.div>
+            <CreatorPageHeader
+                title="Assignments"
+                subtitle="Create and manage course assignments and projects"
+                icon="mdi:clipboard-text"
+                variant="assignment"
+                actions={[
+                    {
+                        label: "Create Assignment",
+                        icon: "mdi:plus",
+                        onClick: () => navigate(`/creator/courses/${courseId}/assignments/create`),
+                        className: "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-shadow"
+                    }
+                ]}
+            />
 
             <motion.div variants={containerVariants} className="grid gap-4">
                 {assignments.length === 0 ? (

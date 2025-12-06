@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Icon } from "@iconify/react";
 import { motion } from 'framer-motion';
+import CreatorPageHeader from '@/components/creator/CreatorPageHeader';
 
 // Animation variants
 const containerVariants = {
@@ -103,24 +104,15 @@ export default function CreateCourse() {
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Custom Header */}
-                <motion.div
-                    variants={itemVariants}
-                    className="mb-8"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                            <Icon icon="mdi:book-plus" className="text-white text-lg" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                Create New Course
-                            </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Start building your curriculum by defining the basic course details.
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+                {/* Custom Header */}
+                <CreatorPageHeader
+                    title="Create New Course"
+                    subtitle="Start building your curriculum by defining the basic course details."
+                    icon="mdi:book-plus"
+                    variant="default"
+                    backUrl="/creator/courses"
+                    backLabel="Back to Courses"
+                />
 
                 {/* Form */}
                 <motion.div
