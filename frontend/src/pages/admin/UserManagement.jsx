@@ -35,6 +35,7 @@ export default function UserManagement() {
 
             if (usersRes?.data?.success) setUsers(usersRes.data.data.users);
             if (rolesRes?.data?.success) setRoles(rolesRes.data.data);
+            if (deptsRes?.data?.success) setDepartments(deptsRes.data.data);
         } catch (error) {
             console.error('Error assigning role:', error);
         } finally {
