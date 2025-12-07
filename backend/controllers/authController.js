@@ -6,13 +6,13 @@ const { sendOTP } = require('../utils/emailService');
 
 
 
-const verifyOtp = (otp, phoneOtpHash) => {
+const verifyOtp = (otp, otpHash) => {
   if (process.env.NODE_ENV === 'development' && otp == "123456") {
     return true;
   }
   const hash = crypto.createHash('sha256').update(otp).digest('hex');
 
-  return hash === phoneOtpHash;
+  return hash === otpHash;
 };
 
 exports.register = async (req, res) => {
@@ -57,8 +57,8 @@ exports.register = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const hash = crypto.createHash('sha256').update(otp).digest('hex');
-    user.phoneOtpHash = hash;
-    user.phoneOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    user.otpHash = hash;
+    user.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
     await user.save();
 
     // Send OTP via email
@@ -103,13 +103,13 @@ exports.verifyOtp = async (req, res) => {
 
     // Verify OTP
     const hash = crypto.createHash('sha256').update(otp).digest('hex');
-    if (!verifyOtp(otp, user.phoneOtpHash) || user.phoneOtpExpires < Date.now()) {
+    if (!verifyOtp(otp, user.otpHash) || user.otpExpires < Date.now()) {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
     }
 
     // Clear OTP and verify
-    user.phoneOtpHash = null;
-    user.phoneOtpExpires = null;
+    user.otpHash = null;
+    user.otpExpires = null;
     // user.isPhoneVerified = true; // Uncomment if field exists
     await user.save();
 
