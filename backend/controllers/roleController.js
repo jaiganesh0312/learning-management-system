@@ -271,6 +271,9 @@ const getAllUsersWithRoles = async (req, res) => {
 
     const { count, rows: users } = await User.findAndCountAll({
       where: whereClause,
+      attributes: {
+        exclude: ['password', 'otpHash', 'otpExpires'],
+      },
       include: [{
         model: UserRole,
         as: 'userRoles',
