@@ -38,9 +38,10 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  // isPhoneVerified: {
-  //   type: DataTypes.BOOLEAN,
-  //   defaultValue: false,
+  isEmailVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
   otpHash: {
     type: DataTypes.STRING,
     allowNull: true,

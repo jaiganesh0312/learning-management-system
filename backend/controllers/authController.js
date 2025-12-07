@@ -73,10 +73,8 @@ exports.register = async (req, res) => {
 
 exports.verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body; // Changed from empCode to userId or email for general use
+    const { email, otp } = req.body; 
 
-    // Find user by ID or Email (adjusting based on previous logic which used empCode, but standard is usually userId or email)
-    // Assuming userId is passed for now as it's cleaner after registration
     let user;
     if (email) {
       user = await User.findOne({ 
@@ -110,7 +108,8 @@ exports.verifyOtp = async (req, res) => {
     // Clear OTP and verify
     user.otpHash = null;
     user.otpExpires = null;
-    // user.isPhoneVerified = true; // Uncomment if field exists
+    user.isEmailVerified = true;
+
     await user.save();
 
     // Generate JWT
@@ -138,9 +137,7 @@ exports.verifyOtp = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("email", email);
-    console.log("password", password);
-
+   
     // Find user with roles
     const user = await User.findOne({
       where: { email },
@@ -160,8 +157,8 @@ exports.login = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (!user.password) {
-      return res.status(400).json({ success: false, message: 'Password not set. Please register first.' });
+    if (!user.isEmailVerified) {
+      return res.status(400).json({ success: false, message: 'Email not verified' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
