@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardBody, Button, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Input, Select, SelectItem } from "@heroui/react";
+import { Card, CardBody, Button, Chip } from "@heroui/react";
+import UserRoleModal from "@/components/admin/UserRoleModal";
+import UserDepartmentModal from "@/components/admin/UserDepartmentModal";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { userService, roleService, departmentService } from '@/services';
@@ -10,15 +12,10 @@ export default function UserManagement() {
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
     const [departments, setDepartments] = useState([]);
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const [selectedUser, setSelectedUser] = useState(null);
     const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
     const [selectedUserForDept, setSelectedUserForDept] = useState(null);
-    const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     const [selectedUserForRole, setSelectedUserForRole] = useState(null);
-    const [selectedRoleToAdd, setSelectedRoleToAdd] = useState("");
-    const [selectedRoleToRevoke, setSelectedRoleToRevoke] = useState("");
 
     useEffect(() => {
         fetchData();
@@ -48,95 +45,23 @@ export default function UserManagement() {
     const openRoleModal = (rowUser) => {
         const user = users.find(u => u.id === rowUser.id);
         setSelectedUserForRole(user);
-        setSelectedRoleToAdd("");
-        setSelectedRoleToRevoke("");
         setIsRoleModalOpen(true);
-    };
-
-    const handleAddRole = async () => {
-        if (!selectedUserForRole || !selectedRoleToAdd) return;
-        try {
-            const response = await roleService.assignRole({
-                userId: selectedUserForRole.id,
-                roleId: selectedRoleToAdd
-            });
-            if (response?.data?.success) {
-                fetchData();
-                setSelectedRoleToAdd("");
-                // Refresh the selected user's roles in the modal
-                const updatedUser = { ...selectedUserForRole };
-                // We might need to re-fetch the specific user or just close the modal
-                // For simplicity, let's close the modal and let the main list refresh
-                setIsRoleModalOpen(false);
-            }
-        } catch (error) {
-            console.error('Error assigning role:', error);
-        }
-    };
-
-    const handleRevokeRole = async () => {
-        if (!selectedUserForRole || !selectedRoleToRevoke) return;
-        try {
-            const response = await roleService.revokeRole({
-                userId: selectedUserForRole.id,
-                roleId: selectedRoleToRevoke
-            });
-            if (response?.data?.success) {
-                fetchData();
-                setSelectedRoleToRevoke("");
-                // Refresh the selected user's roles in the modal
-                // We need to update the selectedUserForRole state to reflect the change immediately in the modal
-                // Since we fetched fresh data, we can find the updated user from the 'users' list (which will be updated by fetchData)
-                // However, fetchData is async and might not have finished yet. 
-                // A better approach for the modal is to locally update the state or wait for fetch.
-                // For now, let's close the modal to be safe and simple, or we can try to update local state.
-                // Let's close it as per previous logic, or keep it open and rely on the fact that we need to re-select the user.
-                // Actually, let's just close it to ensure consistency.
-                setIsRoleModalOpen(false);
-            }
-        } catch (error) {
-            console.error('Error revoking role:', error);
-        }
     };
 
     const openDeptModal = (user) => {
         setSelectedUserForDept(user);
-        setSelectedDepartmentId(user.department?.id || "");
         setIsDeptModalOpen(true);
     };
 
-    const handleAssignDepartment = async () => {
-        if (!selectedDepartmentId || !selectedUserForDept) return;
-        try {
-            const response = await departmentService.assignUserToDepartment(selectedDepartmentId, { userId: selectedUserForDept.id });
-            if (response?.data?.success) {
-                fetchData();
-                setIsDeptModalOpen(false);
-            }
-        } catch (error) {
-            console.error('Error assigning department:', error);
-        }
-    };
 
-    const handleRemoveDepartment = async () => {
-        if (!selectedUserForDept?.department?.id) return;
-        try {
-            const response = await departmentService.removeUserFromDepartment(selectedUserForDept.department.id, selectedUserForDept.id);
-            if (response?.data?.success) {
-                fetchData();
-                setIsDeptModalOpen(false);
-            }
-        } catch (error) {
-            console.error('Error removing department:', error);
-        }
-    };
+
+
 
     const columns = [
         { key: 'name', label: 'Name' },
         { key: 'email', label: 'Email' },
         { key: 'roles', label: 'Roles' },
         { key: 'department', label: 'Department' },
-        { key: 'status', label: 'Status' },
         { key: 'actions', label: 'Actions' }
     ];
 
@@ -153,26 +78,14 @@ export default function UserManagement() {
                 ))}
             </div>
         ),
+        departmentId: user.department?.id,
         department: user.department?.name || 'N/A',
-        status: (
-            <Chip size="sm" color={user.isActive ? "success" : "danger"} variant="flat">
-                {user.isActive ? 'Active' : 'Inactive'}
-            </Chip>
-        )
     }));
 
     const rowActions = [
         {
             isDropdown: true,
             items: [
-                {
-                    label: 'View Details',
-                    icon: 'mdi:eye',
-                    onClick: (user) => {
-                        setSelectedUser(users.find(u => u.id === user.id));
-                        onOpen();
-                    }
-                },
                 {
                     label: 'Manage Roles',
                     icon: 'mdi:account-cog',
@@ -182,17 +95,6 @@ export default function UserManagement() {
                     label: 'Manage Department',
                     icon: 'mdi:domain',
                     onClick: (user) => openDeptModal(user)
-                },
-                {
-                    label: 'Edit User',
-                    icon: 'mdi:pencil',
-                    onClick: (user) => console.log('Edit user:', user)
-                },
-                {
-                    label: 'Delete User',
-                    icon: 'mdi:delete',
-                    color: 'danger',
-                    onClick: (user) => console.log('Delete user:', user)
                 }
             ]
         }
@@ -205,24 +107,21 @@ export default function UserManagement() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <PageHeader
-                    title="User Management"
-                    description="Manage users, roles, and permissions"
-                    icon="mdi:account-multiple"
-                    breadcrumbs={[
-                        { label: 'Dashboard', href: '/dashboard' },
-                        { label: 'Admin', href: '/admin/users' },
-                        { label: 'Users' }
-                    ]}
-                    actions={[
-                        {
-                            label: 'Add User',
-                            icon: 'mdi:plus',
-                            color: 'primary',
-                            onClick: () => console.log('Add user')
-                        }
-                    ]}
-                />
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+                    <div className="flex items-start gap-4 flex-1">
+                        <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Icon icon="mdi:account-multiple" className="text-2xl text-primary-600 dark:text-primary-400" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                                User Management
+                            </h1>
+                            <p className="text-gray-600 dark:text-gray-400">
+                                Manage users and their roles and departments
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -244,8 +143,8 @@ export default function UserManagement() {
                         <CardBody className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Users</p>
-                                    <p className="text-3xl font-bold text-green-600">{users.filter(u => u.isActive).length}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Verified Users</p>
+                                    <p className="text-3xl font-bold text-green-600">{users.filter(u => u.isEmailVerified).length}</p>
                                 </div>
                                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center">
                                     <Icon icon="mdi:account-check" className="text-2xl text-green-600" />
@@ -253,6 +152,8 @@ export default function UserManagement() {
                             </div>
                         </CardBody>
                     </Card>
+
+
 
                     <Card className="border border-gray-200 dark:border-gray-800">
                         <CardBody className="p-6">
@@ -296,152 +197,23 @@ export default function UserManagement() {
                     </CardBody>
                 </Card>
 
-                {/* User Details Modal */}
-                <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-                    <ModalContent>
-                        <ModalHeader>User Details</ModalHeader>
-                        <ModalBody>
-                            {selectedUser && (
-                                <div className="space-y-4">
-                                    <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Name</p>
-                                        <p className="font-semibold">{selectedUser.firstName} {selectedUser.lastName}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Email</p>
-                                        <p className="font-semibold">{selectedUser.email}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Roles</p>
-                                        <div className="flex gap-2 flex-wrap">
-                                            {selectedUser?.userRoles?.map(ur => (
-                                                <Chip key={ur.roleId} color="primary" variant="flat">
-                                                    {ur.role?.name}
-                                                </Chip>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button variant="light" onPress={onClose}>Close</Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
 
-                {/* Department Management Modal */}
-                <Modal isOpen={isDeptModalOpen} onClose={() => setIsDeptModalOpen(false)}>
-                    <ModalContent>
-                        <ModalHeader>Manage Department</ModalHeader>
-                        <ModalBody>
-                            <div className="space-y-4">
-                                <p>Assign <strong>{selectedUserForDept?.firstName} {selectedUserForDept?.lastName}</strong> to a department.</p>
-                                <Select
-                                    label="Department"
-                                    placeholder="Select a department"
-                                    selectedKeys={selectedDepartmentId ? [selectedDepartmentId] : []}
-                                    onChange={(e) => setSelectedDepartmentId(e.target.value)}
-                                >
-                                    {departments.map((dept) => (
-                                        <SelectItem key={dept.id} value={dept.id}>
-                                            {dept.name}
-                                        </SelectItem>
-                                    ))}
-                                </Select>
-                            </div>
-                        </ModalBody>
-                        <ModalFooter>
-                            {selectedUserForDept?.department && (
-                                <Button color="danger" variant="flat" onPress={handleRemoveDepartment}>
-                                    Remove from Department
-                                </Button>
-                            )}
-                            <Button color="primary" onPress={handleAssignDepartment}>
-                                Assign Department
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
 
-                {/* Role Management Modal */}
-                <Modal isOpen={isRoleModalOpen} onClose={() => setIsRoleModalOpen(false)}>
-                    <ModalContent>
-                        <ModalHeader>Manage Roles - {selectedUserForRole?.firstName} {selectedUserForRole?.lastName}</ModalHeader>
-                        <ModalBody>
-                            <div className="space-y-6">
-                                {/* Assign Role Section */}
-                                <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                    <p className="text-sm font-medium mb-3 text-primary">Assign New Role</p>
-                                    {roles.filter(role => !selectedUserForRole?.userRoles?.some(ur => ur.roleId === role.id)).length > 0 ? (
-                                        <div className="flex gap-2">
-                                            <Select
-                                                placeholder="Select role to assign"
-                                                selectedKeys={selectedRoleToAdd ? [selectedRoleToAdd] : []}
-                                                onChange={(e) => setSelectedRoleToAdd(e.target.value)}
-                                                className="flex-1"
-                                            >
-                                                {roles
-                                                    .filter(role => !selectedUserForRole?.userRoles?.some(ur => ur.roleId === role.id))
-                                                    .map((role) => (
-                                                        <SelectItem key={role.id} value={role.id}>
-                                                            {role.name}
-                                                        </SelectItem>
-                                                    ))
-                                                }
-                                            </Select>
-                                            <Button
-                                                color="primary"
-                                                onPress={handleAddRole}
-                                                isDisabled={!selectedRoleToAdd}
-                                            >
-                                                Assign
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 italic">All available roles are already assigned to this user.</p>
-                                    )}
-                                </div>
+                <UserDepartmentModal
+                    isOpen={isDeptModalOpen}
+                    onClose={() => setIsDeptModalOpen(false)}
+                    user={selectedUserForDept}
+                    departments={departments}
+                    onUpdate={fetchData}
+                />
 
-                                {/* Revoke Role Section */}
-                                <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                    <p className="text-sm font-medium mb-3 text-danger">Revoke Role</p>
-                                    {selectedUserForRole?.userRoles?.length > 0 ? (
-                                        <div className="flex gap-2">
-                                            <Select
-                                                placeholder="Select role to revoke"
-                                                selectedKeys={selectedRoleToRevoke ? [selectedRoleToRevoke] : []}
-                                                onChange={(e) => setSelectedRoleToRevoke(e.target.value)}
-                                                className="flex-1"
-                                            >
-                                                {selectedUserForRole.userRoles.map((ur) => (
-                                                    <SelectItem key={ur.roleId} value={ur.roleId}>
-                                                        {ur.role?.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </Select>
-                                            <Button
-                                                color="danger"
-                                                variant="flat"
-                                                onPress={handleRevokeRole}
-                                                isDisabled={!selectedRoleToRevoke}
-                                            >
-                                                Revoke
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 italic">No roles assigned to revoke.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button variant="light" onPress={() => setIsRoleModalOpen(false)}>
-                                Close
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
+                <UserRoleModal
+                    isOpen={isRoleModalOpen}
+                    onClose={() => setIsRoleModalOpen(false)}
+                    user={selectedUserForRole}
+                    roles={roles}
+                    onUpdate={fetchData}
+                />
             </div>
         </div>
     );
