@@ -35,12 +35,12 @@ export default function UserDepartmentModal({ isOpen, onClose, user, departments
                 <ModalBody>
                     <div className="grid gap-2">
                         <p>
-                            {user?.department
+                            {user?.departmentName
                                 ? `Change department for `
                                 : `Assign `}
-                            <strong>{user?.firstName} {user?.lastName}</strong>
-                            {user?.department ? ' from ' : ' to a department.'}
-                            {user?.department && <strong>{user.department.name}</strong>}
+                            <strong>{user?.name}</strong>
+                            {user?.departmentName ? ' from ' : ' to a department.'}
+                            {user?.departmentName && <strong>{user.departmentName}</strong>}
                         </p>
                         <Select
                             label="Department"

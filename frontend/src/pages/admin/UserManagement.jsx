@@ -79,6 +79,7 @@ export default function UserManagement() {
             </div>
         ),
         departmentId: user.department?.id,
+        departmentName: user.department?.name,
         department: user.department?.name || 'N/A',
     }));
 
